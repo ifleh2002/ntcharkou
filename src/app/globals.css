@@ -1,0 +1,132 @@
+@import 'tailwindcss';
+
+/* =============================================================================
+   Ntcharkou — direction visuelle
+   Chaleureux (terres cuites, sable) + professionnel (typographie sobre,
+   surfaces nettes) + communautaire (vert zellige pour tout ce qui est collectif).
+   ========================================================================== */
+
+@theme {
+  /* Argile — identite principale, tout ce qui touche au terrain */
+  --color-argile-50: #fdf6f2;
+  --color-argile-100: #f9e7dd;
+  --color-argile-200: #f2cdba;
+  --color-argile-300: #e7ab8e;
+  --color-argile-400: #d9835f;
+  --color-argile-500: #c2603b;
+  --color-argile-600: #a74c2c;
+  --color-argile-700: #883c24;
+  --color-argile-800: #6b3020;
+  --color-argile-900: #4a231a;
+
+  /* Zellige — tout ce qui est collectif : projets, groupes, participation */
+  --color-zellige-50: #eff8f5;
+  --color-zellige-100: #d3ece4;
+  --color-zellige-200: #a8d8ca;
+  --color-zellige-300: #74bda9;
+  --color-zellige-400: #449c87;
+  --color-zellige-500: #1f6b5a;
+  --color-zellige-600: #185849;
+  --color-zellige-700: #14463c;
+  --color-zellige-800: #10352e;
+  --color-zellige-900: #0b2521;
+
+  /* Sable — fonds */
+  --color-sable-50: #fdfbf7;
+  --color-sable-100: #faf6f0;
+  --color-sable-200: #f2ece1;
+  --color-sable-300: #e6dccb;
+  --color-sable-400: #d3c4ab;
+
+  /* Encre — textes */
+  --color-encre-400: #7a736b;
+  --color-encre-500: #5a534b;
+  --color-encre-700: #38332e;
+  --color-encre-900: #23201d;
+
+  /* Safran — accents, scores eleves */
+  --color-safran-100: #fdf1d8;
+  --color-safran-400: #e0ae4e;
+  --color-safran-500: #c9902b;
+
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    sans-serif;
+
+  --radius-card: 0.875rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-sable-100);
+    color: var(--color-encre-900);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: var(--color-argile-200);
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  /* Motif discret inspire du zellige, utilise en fond de bandeau */
+  .motif-zellige {
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(194, 96, 59, 0.16) 1px, transparent 0),
+      radial-gradient(circle at 13px 13px, rgba(31, 107, 90, 0.12) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
+  .surface {
+    background-color: white;
+    border: 1px solid var(--color-sable-300);
+    border-radius: var(--radius-card);
+  }
+
+  /* Champs de formulaire : un seul style pour input / select / textarea */
+  .champ {
+    width: 100%;
+    border-radius: 0.625rem;
+    border: 1px solid var(--color-sable-400);
+    background-color: white;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.9375rem;
+    color: var(--color-encre-900);
+    outline: none;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .champ::placeholder {
+    color: var(--color-encre-400);
+  }
+
+  .champ:focus {
+    border-color: var(--color-argile-400);
+    box-shadow: 0 0 0 3px rgba(217, 131, 95, 0.18);
+  }
+
+  .champ:disabled {
+    background-color: var(--color-sable-200);
+    color: var(--color-encre-400);
+  }
+
+  .etiquette {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-encre-700);
+    margin-bottom: 0.375rem;
+  }
+}

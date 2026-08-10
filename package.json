@@ -1,0 +1,30 @@
+{
+  "name": "ntcharkou",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ntcharkou — place de marche du logement participatif au Maroc",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test:db": "bash supabase/tests/run.sh"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.47.10",
+    "next": "^16.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.3"
+  }
+}
