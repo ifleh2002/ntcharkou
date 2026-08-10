@@ -11,6 +11,7 @@ import {
   ZONING_ORDER,
 } from '@/lib/labels'
 import type { City, ProfessionalBody, PropertyNeed, Region } from '@/lib/types'
+import { CityOptions } from './city-options'
 import { Alert, Button, Field } from './ui'
 
 export function ProjectForm({
@@ -36,11 +37,6 @@ export function ProjectForm({
   const [region, setRegion] = useState(defaults?.region_code ?? '')
   const [units, setUnits] = useState(defaults?.units ? String(defaults.units) : '')
   const [budget, setBudget] = useState('')
-
-  const visibleCities = useMemo(
-    () => cities.filter((c) => !region || c.region_code === region),
-    [cities, region],
-  )
 
   const totalBudget = useMemo(() => {
     const u = Number(units)
@@ -122,11 +118,7 @@ export function ProjectForm({
                 defaultValue={defaults?.city_id ?? ''}
               >
                 <option value="">—</option>
-                {visibleCities.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name_fr}
-                  </option>
-                ))}
+                <CityOptions cities={cities} regions={regions} region={region} />
               </select>
             </Field>
 

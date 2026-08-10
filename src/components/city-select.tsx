@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import type { City, Region } from '@/lib/types'
+import { CityOptions } from './city-options'
 import { Field } from './ui'
 
 /** Couple région / ville avec filtrage de la liste des villes. */
@@ -26,11 +27,6 @@ export function CitySelect({
 }) {
   const [region, setRegion] = useState(defaultRegion ?? '')
   const [city, setCity] = useState(defaultCity ?? '')
-
-  const visibleCities = useMemo(
-    () => cities.filter((c) => !region || c.region_code === region),
-    [cities, region],
-  )
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
@@ -64,11 +60,7 @@ export function CitySelect({
           onChange={(event) => setCity(event.target.value)}
         >
           <option value="">—</option>
-          {visibleCities.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name_fr}
-            </option>
-          ))}
+          <CityOptions cities={cities} regions={regions} region={region} />
         </select>
       </Field>
     </div>

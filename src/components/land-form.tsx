@@ -8,6 +8,7 @@ import { formatDh } from '@/lib/format'
 import { LEGAL_STATUS_LABELS, OWNER_KIND_LABELS, ZONING_LABELS, ZONING_ORDER } from '@/lib/labels'
 import { LAND_DOCUMENTS_BUCKET, LAND_IMAGES_BUCKET } from '@/lib/storage'
 import type { City, LegalStatus, OwnerKind, Profile, Region } from '@/lib/types'
+import { CityOptions } from './city-options'
 import { Alert, Button, Checkbox, Field, cx } from './ui'
 
 const STEPS = [
@@ -51,15 +52,6 @@ export function LandForm({
   const [kind, setKind] = useState<OwnerKind>(ownerKind)
   const [surface, setSurface] = useState('')
   const [pricePerM2, setPricePerM2] = useState('')
-
-  const landCities = useMemo(
-    () => cities.filter((c) => !region || c.region_code === region),
-    [cities, region],
-  )
-  const residenceCities = useMemo(
-    () => cities.filter((c) => !residenceRegion || c.region_code === residenceRegion),
-    [cities, residenceRegion],
-  )
 
   const totalPrice = useMemo(() => {
     const s = Number(surface)
@@ -278,11 +270,7 @@ export function LandForm({
                   defaultValue={profile.city_id ?? ''}
                 >
                   <option value="">—</option>
-                  {residenceCities.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name_fr}
-                    </option>
-                  ))}
+                  <CityOptions cities={cities} regions={regions} region={residenceRegion} />
                 </select>
               </Field>
             </div>
@@ -349,11 +337,7 @@ export function LandForm({
               <Field label="Ville" htmlFor="city_id">
                 <select id="city_id" name="city_id" className="champ" defaultValue="">
                   <option value="">Choisissez une ville</option>
-                  {landCities.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name_fr}
-                    </option>
-                  ))}
+                  <CityOptions cities={cities} regions={regions} region={region} />
                 </select>
               </Field>
             </div>

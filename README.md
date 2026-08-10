@@ -69,7 +69,24 @@ npx supabase db push
 
 Ou en collant les fichiers de `supabase/migrations/` **dans l'ordre alphabétique** dans
 l'éditeur SQL du tableau de bord. Ils créent le schéma, le moteur de matching, les règles RLS,
-les KPI, les 12 régions du Maroc avec leurs principales villes, et les buckets de stockage.
+les KPI, le référentiel géographique et les buckets de stockage.
+
+**Référentiel géographique** : les 12 régions administratives du Royaume et 283 communes
+urbaines, chaque région étant pourvue.
+
+| Région | Villes | Région | Villes |
+| --- | ---: | --- | ---: |
+| Tanger-Tétouan-Al Hoceïma | 22 | Marrakech-Safi | 26 |
+| L'Oriental | 29 | Drâa-Tafilalet | 26 |
+| Fès-Meknès | 34 | Souss-Massa | 28 |
+| Rabat-Salé-Kénitra | 32 | Guelmim-Oued Noun | 12 |
+| Béni Mellal-Khénifra | 24 | Laâyoune-Sakia El Hamra | 9 |
+| Casablanca-Settat | 33 | Dakhla-Oued Ed-Dahab | 8 |
+
+La liste couvre les communes urbaines (municipalités) ; les communes rurales et centres
+délégués n'y figurent pas — le formulaire propriétaire prévoit pour cela le champ libre
+« Autre ville / commune ». Ajouter une localité ne demande qu'une ligne dans
+`supabase/migrations/20260810098000_cities_complete.sql`.
 
 ### 4. Lancer l'application
 
@@ -90,14 +107,36 @@ update public.profiles set role = 'admin' where email = 'vous@exemple.ma';
 > rôle. Il laisse passer les requêtes sans session (`auth.uid() is null`) : c'est précisément
 > ce chemin — console SQL, `service_role` — qui permet ce premier amorçage.
 
-### 6. Jeu de démonstration (facultatif)
+### 6. Projets pilotes et jeu de démonstration (facultatif)
 
 ```bash
 psql "$DATABASE_URL" -f supabase/seed.sql
 ```
 
-Six terrains publiés, quatre demandes, deux projets — et les correspondances calculées
-automatiquement (18 correspondances, score moyen ≈ 63 %).
+Le script installe **3 propriétaires, 66 participants, 12 terrains publiés dans 8 régions,
+10 demandes et 7 projets pilotes**. Les correspondances ne sont pas écrites en dur : elles sont
+calculées par le moteur au fil des insertions (89 correspondances, score moyen ≈ 61 %).
+
+Les sept projets couvrent volontairement tout le workflow de la section 14, de l'analyse au
+projet livré — de quoi voir chaque état de l'interface et rendre les KPI du back-office
+significatifs :
+
+| Projet pilote | Ville | Typologie | Groupe | État |
+| --- | --- | --- | ---: | --- |
+| Résidence des Médecins | Casablanca | Immeuble R+4, 20 logements | 14 / 20 | Ouvert |
+| Village des Ingénieurs | Marrakech | Lotissement, 18 villas | 8 / 18 | Ouvert |
+| Mini-fermes du Souss | Agadir | 10 parcelles agricoles | 6 / 10 | Ouvert |
+| Résidence des Enseignants | Rabat | Immeuble R+3, 12 logements | 12 / 12 | Groupe constitué |
+| Résidence Al Amal | Tanger | Immeuble vue mer, 14 logements | 14 / 14 | En préparation |
+| Résidence Bahia | Meknès | R+2, 8 logements | 8 / 8 | Réalisé |
+| Coopérative des Pharmaciens | Fès | Immeuble R+3, 10 logements | 1 / 10 | En analyse |
+
+Trois d'entre eux sont réservés à un corps professionnel (médecins, enseignants, pharmaciens),
+les autres sont ouverts à tous. Le passage en « groupe constitué » n'est pas écrit dans le
+script : c'est le déclencheur `project_participants_lifecycle` qui le décide dès que la cible
+est atteinte.
+
+Le script est ré-exécutable sans effet de bord (toutes les insertions sont idempotentes).
 
 ### 7. Emails de notification (facultatif)
 

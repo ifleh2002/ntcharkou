@@ -19,6 +19,7 @@ import type {
   Region,
   SameBodyPreference,
 } from '@/lib/types'
+import { CityOptions } from './city-options'
 import { Alert, Button, Checkbox, Field } from './ui'
 
 export function RequestForm({
@@ -48,11 +49,6 @@ export function RequestForm({
   const [needs, setNeeds] = useState<Set<PropertyNeed>>(new Set(defaults?.needs ?? []))
   const [units, setUnits] = useState('')
   const [budgetPerUnit, setBudgetPerUnit] = useState('')
-
-  const visibleCities = useMemo(
-    () => cities.filter((c) => !region || c.region_code === region),
-    [cities, region],
-  )
 
   const impliedTotal = useMemo(() => {
     const u = Number(units)
@@ -125,11 +121,7 @@ export function RequestForm({
               defaultValue={defaults?.city_id ?? profile.city_id ?? ''}
             >
               <option value="">Indifférent</option>
-              {visibleCities.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name_fr}
-                </option>
-              ))}
+              <CityOptions cities={cities} regions={regions} region={region} />
             </select>
           </Field>
 

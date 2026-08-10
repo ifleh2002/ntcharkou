@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { ZONING_LABELS, ZONING_ORDER } from '@/lib/labels'
 import type { City, Region } from '@/lib/types'
+import { CityOptions } from './city-options'
 import { Button, Field } from './ui'
 
 export interface LandFilterValues {
@@ -33,11 +34,6 @@ export function LandFilters({
 }) {
   const [region, setRegion] = useState(values.region ?? '')
   const [city, setCity] = useState(values.city ?? '')
-
-  const visibleCities = useMemo(
-    () => (region ? cities.filter((c) => c.region_code === region) : cities),
-    [cities, region],
-  )
 
   const selectedZoning = new Set(values.zoning ?? [])
 
@@ -83,11 +79,7 @@ export function LandFilters({
           onChange={(event) => setCity(event.target.value)}
         >
           <option value="">Toutes les villes</option>
-          {visibleCities.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name_fr}
-            </option>
-          ))}
+          <CityOptions cities={cities} regions={regions} region={region} />
         </select>
       </Field>
 
