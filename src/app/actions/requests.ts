@@ -3,8 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { getActionTranslation } from '@/lib/i18n/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { PROPERTY_NEED_LABELS } from '@/lib/labels'
+import { firstIssueMessage } from './validation'
 import type { PropertyNeed } from '@/lib/types'
 
 export interface RequestActionResult {
@@ -52,20 +53,26 @@ function checked(value: FormDataEntryValue | null) {
 /** Depot d'une demande participant (sections 5 a 9). */
 export async function saveRequest(formData: FormData): Promise<RequestActionResult> {
   const supabase = await createSupabaseServerClient()
+  const { t } = await getActionTranslation()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: 'Vous devez être connecté pour déposer une demande.' }
+  if (!user) return { error: t.auth.errCredentials }
 
   const parsed = requestSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? 'Formulaire incomplet.' }
+    return {
+      error: firstIssueMessage(t, parsed.error, {
+        region_code: t.common.region,
+        units_wanted: t.requestForm.unitsWanted,
+      }),
+    }
   }
   const values = parsed.data
 
   const needs = formData.getAll('property_needs').map(String) as PropertyNeed[]
   if (needs.length === 0) {
-    return { error: 'Sélectionnez au moins une typologie de bien recherchée.' }
+    return { error: t.requestForm.errNeed }
   }
 
   if (
@@ -73,7 +80,7 @@ export async function saveRequest(formData: FormData): Promise<RequestActionResu
     values.budget_total_max !== null &&
     values.budget_total_min > values.budget_total_max
   ) {
-    return { error: 'Le budget minimum ne peut pas dépasser le budget maximum.' }
+    return { error: t.requestForm.errBudget }
   }
 
   // Le profil participant est mis a jour en meme temps que la demande.
@@ -100,7 +107,9 @@ export async function saveRequest(formData: FormData): Promise<RequestActionResu
 
   const title =
     values.title ||
-    `${PROPERTY_NEED_LABELS[needs[0]]}${values.units_wanted ? ` — ${values.units_wanted} unités` : ''}`
+    `${t.enums.propertyNeed[needs[0]]}${
+      values.units_wanted ? ` — ${values.units_wanted} ${t.common.units}` : ''
+    }`
 
   const { data, error } = await supabase
     .from('participant_requests')
@@ -130,15 +139,15 @@ export async function saveRequest(formData: FormData): Promise<RequestActionResu
     .select('id')
     .single()
 
-  if (error) return { error: `Enregistrement impossible : ${error.message}` }
+  if (error) return { error: `${t.landForm.errSave} ${error.message}` }
 
-  revalidatePath('/mes-demandes')
-  revalidatePath('/tableau-de-bord')
+  revalidatePath('/', 'layout')
   return { requestId: data.id as string }
 }
 
 /** Met une demande en pause / la réactive. */
 export async function setRequestStatus(formData: FormData) {
+  const { path } = await getActionTranslation()
   const requestId = formData.get('request_id') as string
   const status = formData.get('status') as string
   if (!['active', 'en_pause', 'satisfaite', 'archivee'].includes(status)) return
@@ -146,20 +155,22 @@ export async function setRequestStatus(formData: FormData) {
   const supabase = await createSupabaseServerClient()
   await supabase.from('participant_requests').update({ status }).eq('id', requestId)
 
-  revalidatePath('/mes-demandes')
-  revalidatePath(`/mes-demandes/${requestId}`)
+  revalidatePath(path('/mes-demandes'))
+  revalidatePath(path(`/mes-demandes/${requestId}`))
 }
 
 export async function deleteRequest(formData: FormData) {
+  const { path } = await getActionTranslation()
   const requestId = formData.get('request_id') as string
   const supabase = await createSupabaseServerClient()
   await supabase.from('participant_requests').delete().eq('id', requestId)
-  revalidatePath('/mes-demandes')
-  redirect('/mes-demandes')
+  revalidatePath(path('/mes-demandes'))
+  redirect(path('/mes-demandes'))
 }
 
 /** Met à jour le statut d'une correspondance (intéressé / écartée). */
 export async function setMatchStatus(formData: FormData) {
+  const { path } = await getActionTranslation()
   const matchId = formData.get('match_id') as string
   const requestId = formData.get('request_id') as string
   const status = formData.get('status') as string
@@ -171,5 +182,5 @@ export async function setMatchStatus(formData: FormData) {
     .update({ status, viewed_at: new Date().toISOString() })
     .eq('id', matchId)
 
-  revalidatePath(`/mes-demandes/${requestId}`)
+  revalidatePath(path(`/mes-demandes/${requestId}`))
 }

@@ -215,7 +215,7 @@ export function Field({
     <div>
       <label className="etiquette" htmlFor={htmlFor}>
         {label}
-        {required ? <span className="ml-0.5 text-argile-600">*</span> : null}
+        {required ? <span className="ms-0.5 text-argile-600">*</span> : null}
       </label>
       {children}
       {hint ? <p className="mt-1 text-xs text-encre-400">{hint}</p> : null}

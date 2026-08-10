@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE, type Locale } from './i18n/config'
 import { createSupabaseServerClient, isSupabaseConfigured } from './supabase/server'
 import type {
   City,
@@ -7,6 +8,37 @@ import type {
   PropertyNeed,
   Region,
 } from './types'
+
+/**
+ * Le référentiel et les vues publiques portent les deux graphies. On résout ici
+ * le nom à afficher, une bonne fois, plutôt qu'à chaque endroit de l'interface :
+ * les composants lisent `region_name` / `city_name` / `name` sans se soucier de
+ * la langue. Le français sert de repli quand l'arabe manque.
+ */
+function pickName(locale: Locale, fr: string | null, ar: string | null): string {
+  if (locale === 'ar') return ar || fr || ''
+  return fr || ar || ''
+}
+
+function localizeLand(land: LandListingPublic, locale: Locale): LandListingPublic {
+  return {
+    ...land,
+    region_name: pickName(locale, land.region_name, land.region_name_ar),
+    city_name: land.city_name || land.city_name_ar
+      ? pickName(locale, land.city_name, land.city_name_ar)
+      : null,
+  }
+}
+
+function localizeProject(project: ProjectPublic, locale: Locale): ProjectPublic {
+  return {
+    ...project,
+    region_name: pickName(locale, project.region_name, project.region_name_ar),
+    city_name: project.city_name || project.city_name_ar
+      ? pickName(locale, project.city_name, project.city_name_ar)
+      : null,
+  }
+}
 
 /** Toutes les lectures publiques passent par ici : une base non configuree ou
  *  une erreur reseau doit degrader l'affichage, jamais casser la page. */
@@ -20,21 +52,33 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-export async function getRegions(): Promise<Region[]> {
+export async function getRegions(locale: Locale = DEFAULT_LOCALE): Promise<Region[]> {
   return safe(async () => {
     const supabase = await createSupabaseServerClient()
     const { data } = await supabase.from('regions').select('*').order('sort_order')
-    return (data ?? []) as Region[]
+    return ((data ?? []) as Region[]).map((region) => ({
+      ...region,
+      name: pickName(locale, region.name_fr, region.name_ar),
+    }))
   }, [])
 }
 
-export async function getCities(regionCode?: string | null): Promise<City[]> {
+export async function getCities(
+  locale: Locale = DEFAULT_LOCALE,
+  regionCode?: string | null,
+): Promise<City[]> {
   return safe(async () => {
     const supabase = await createSupabaseServerClient()
-    let query = supabase.from('cities').select('*').order('name_fr')
+    let query = supabase.from('cities').select('*')
     if (regionCode) query = query.eq('region_code', regionCode)
     const { data } = await query
-    return (data ?? []) as City[]
+    const cities = ((data ?? []) as City[]).map((city) => ({
+      ...city,
+      name: pickName(locale, city.name_fr, city.name_ar),
+    }))
+    // Tri dans la langue affichée : l'ordre alphabétique arabe diffère du latin.
+    const collator = new Intl.Collator(locale === 'ar' ? 'ar' : 'fr')
+    return cities.sort((a, b) => collator.compare(a.name, b.name))
   }, [])
 }
 
@@ -64,7 +108,10 @@ export interface LandSearchResult {
   perPage: number
 }
 
-export async function searchLands(filters: LandFilters = {}): Promise<LandSearchResult> {
+export async function searchLands(
+  filters: LandFilters = {},
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<LandSearchResult> {
   const page = Math.max(1, filters.page ?? 1)
   const perPage = filters.perPage ?? 12
   const from = (page - 1) * perPage
@@ -108,7 +155,7 @@ export async function searchLands(filters: LandFilters = {}): Promise<LandSearch
 
       const { data, count } = await query.range(from, from + perPage - 1)
       return {
-        items: (data ?? []) as LandListingPublic[],
+        items: ((data ?? []) as LandListingPublic[]).map((land) => localizeLand(land, locale)),
         total: count ?? 0,
         page,
         perPage,
@@ -118,11 +165,14 @@ export async function searchLands(filters: LandFilters = {}): Promise<LandSearch
   )
 }
 
-export async function getLand(id: string): Promise<LandListingPublic | null> {
+export async function getLand(
+  id: string,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<LandListingPublic | null> {
   return safe(async () => {
     const supabase = await createSupabaseServerClient()
     const { data } = await supabase.from('land_listings_public').select('*').eq('id', id).maybeSingle()
-    return (data as LandListingPublic | null) ?? null
+    return data ? localizeLand(data as LandListingPublic, locale) : null
   }, null)
 }
 
@@ -150,7 +200,10 @@ export interface ProjectFilters {
   perPage?: number
 }
 
-export async function listProjects(filters: ProjectFilters = {}) {
+export async function listProjects(
+  filters: ProjectFilters = {},
+  locale: Locale = DEFAULT_LOCALE,
+) {
   const page = Math.max(1, filters.page ?? 1)
   const perPage = filters.perPage ?? 12
   const from = (page - 1) * perPage
@@ -171,17 +224,25 @@ export async function listProjects(filters: ProjectFilters = {}) {
         .order('opened_at', { ascending: false, nullsFirst: false })
         .range(from, from + perPage - 1)
 
-      return { items: (data ?? []) as ProjectPublic[], total: count ?? 0, page, perPage }
+      return {
+        items: ((data ?? []) as ProjectPublic[]).map((project) => localizeProject(project, locale)),
+        total: count ?? 0,
+        page,
+        perPage,
+      }
     },
     { items: [] as ProjectPublic[], total: 0, page, perPage },
   )
 }
 
-export async function getProject(id: string): Promise<ProjectPublic | null> {
+export async function getProject(
+  id: string,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<ProjectPublic | null> {
   return safe(async () => {
     const supabase = await createSupabaseServerClient()
     const { data } = await supabase.from('projects_public').select('*').eq('id', id).maybeSingle()
-    return (data as ProjectPublic | null) ?? null
+    return data ? localizeProject(data as ProjectPublic, locale) : null
   }, null)
 }
 

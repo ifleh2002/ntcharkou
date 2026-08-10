@@ -34,10 +34,10 @@ export function CityOptions({
     return (
       <>
         {grouped.map((group) => (
-          <optgroup key={group.region.code} label={group.region.name_fr}>
+          <optgroup key={group.region.code} label={group.region.name}>
             {group.cities.map((city) => (
               <option key={city.id} value={city.id}>
-                {city.name_fr}
+                {city.name}
               </option>
             ))}
           </optgroup>
@@ -52,7 +52,7 @@ export function CityOptions({
         .filter((city) => city.region_code === region)
         .map((city) => (
           <option key={city.id} value={city.id}>
-            {city.name_fr}
+            {city.name}
           </option>
         ))}
     </>

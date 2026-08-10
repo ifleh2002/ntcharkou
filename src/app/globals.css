@@ -53,6 +53,12 @@
     'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
     sans-serif;
 
+  /* Pile de polices arabes : on s'appuie sur les polices système, présentes
+     sur toutes les plateformes, plutôt que sur une police distante. */
+  --font-arabic:
+    'Noto Naskh Arabic', 'Noto Sans Arabic', 'Geeza Pro', 'Segoe UI', 'Tahoma', 'Arial',
+    sans-serif;
+
   --radius-card: 0.875rem;
 }
 
@@ -75,6 +81,33 @@
   h2,
   h3 {
     letter-spacing: -0.02em;
+  }
+
+  /* --- Arabe / sens de lecture de droite à gauche ------------------------ */
+
+  html[lang='ar'] body {
+    font-family: var(--font-arabic);
+    /* L'arabe demande un peu plus d'interligne que le latin à taille égale. */
+    line-height: 1.7;
+  }
+
+  /* Le crénage négatif est pensé pour le latin : il abîme les ligatures arabes. */
+  html[lang='ar'] h1,
+  html[lang='ar'] h2,
+  html[lang='ar'] h3 {
+    letter-spacing: normal;
+  }
+
+  /* Références, prix au m², codes : toujours lus de gauche à droite. */
+  [dir='rtl'] .ltr-inline {
+    direction: ltr;
+    display: inline-block;
+    unicode-bidi: isolate;
+  }
+
+  /* Les graphiques gardent un axe temporel de gauche à droite. */
+  [dir='rtl'] .chart-ltr {
+    direction: ltr;
   }
 }
 

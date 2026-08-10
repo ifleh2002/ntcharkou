@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { ZONING_LABELS, ZONING_ORDER } from '@/lib/labels'
+import type { Dictionary } from '@/lib/i18n'
+import { ZONING_ORDER } from '@/lib/labels'
 import type { City, Region } from '@/lib/types'
 import { CityOptions } from './city-options'
 import { Button, Field } from './ui'
@@ -27,10 +28,14 @@ export function LandFilters({
   regions,
   cities,
   values,
+  t,
+  resetHref,
 }: {
   regions: Region[]
   cities: City[]
   values: LandFilterValues
+  t: Dictionary
+  resetHref: string
 }) {
   const [region, setRegion] = useState(values.region ?? '')
   const [city, setCity] = useState(values.city ?? '')
@@ -39,18 +44,18 @@ export function LandFilters({
 
   return (
     <form method="get" className="surface space-y-4 p-5">
-      <Field label="Mot-clé" htmlFor="f-q">
+      <Field label={t.lands.keyword} htmlFor="f-q">
         <input
           id="f-q"
           name="q"
           type="search"
           defaultValue={values.q ?? ''}
           className="champ"
-          placeholder="Quartier, titre…"
+          placeholder={t.lands.keywordPlaceholder}
         />
       </Field>
 
-      <Field label="Région" htmlFor="f-region">
+      <Field label={t.common.region} htmlFor="f-region">
         <select
           id="f-region"
           name="region"
@@ -61,16 +66,16 @@ export function LandFilters({
             setCity('')
           }}
         >
-          <option value="">Toutes les régions</option>
+          <option value="">{t.common.allRegions}</option>
           {regions.map((r) => (
             <option key={r.code} value={r.code}>
-              {r.name_fr}
+              {r.name}
             </option>
           ))}
         </select>
       </Field>
 
-      <Field label="Ville" htmlFor="f-city">
+      <Field label={t.common.city} htmlFor="f-city">
         <select
           id="f-city"
           name="city"
@@ -78,13 +83,13 @@ export function LandFilters({
           value={city}
           onChange={(event) => setCity(event.target.value)}
         >
-          <option value="">Toutes les villes</option>
+          <option value="">{t.common.allCities}</option>
           <CityOptions cities={cities} regions={regions} region={region} />
         </select>
       </Field>
 
       <fieldset>
-        <legend className="etiquette">Type / zonage</legend>
+        <legend className="etiquette">{t.lands.zoning}</legend>
         <div className="grid grid-cols-2 gap-1.5">
           {ZONING_ORDER.map((zoning) => (
             <label key={zoning} className="flex items-center gap-2 text-sm text-encre-700">
@@ -95,14 +100,14 @@ export function LandFilters({
                 defaultChecked={selectedZoning.has(zoning)}
                 className="size-4 accent-[var(--color-argile-500)]"
               />
-              {ZONING_LABELS[zoning]}
+              {t.enums.zoning[zoning]}
             </label>
           ))}
         </div>
       </fieldset>
 
       <fieldset>
-        <legend className="etiquette">Budget total (DH)</legend>
+        <legend className="etiquette">{t.lands.budgetTotal}</legend>
         <div className="flex gap-2">
           <input
             name="budget_min"
@@ -111,7 +116,7 @@ export function LandFilters({
             step="10000"
             defaultValue={values.budgetMin ?? ''}
             className="champ"
-            placeholder="Min"
+            placeholder={t.lands.min}
           />
           <input
             name="budget_max"
@@ -120,13 +125,13 @@ export function LandFilters({
             step="10000"
             defaultValue={values.budgetMax ?? ''}
             className="champ"
-            placeholder="Max"
+            placeholder={t.lands.max}
           />
         </div>
       </fieldset>
 
       <fieldset>
-        <legend className="etiquette">Surface (m²)</legend>
+        <legend className="etiquette">{t.lands.surface}</legend>
         <div className="flex gap-2">
           <input
             name="surface_min"
@@ -135,7 +140,7 @@ export function LandFilters({
             step="50"
             defaultValue={values.surfaceMin ?? ''}
             className="champ"
-            placeholder="Min"
+            placeholder={t.lands.min}
           />
           <input
             name="surface_max"
@@ -144,12 +149,12 @@ export function LandFilters({
             step="50"
             defaultValue={values.surfaceMax ?? ''}
             className="champ"
-            placeholder="Max"
+            placeholder={t.lands.max}
           />
         </div>
       </fieldset>
 
-      <Field label="Nombre d'unités réalisables (minimum)" htmlFor="f-units">
+      <Field label={t.lands.minUnits} htmlFor="f-units">
         <input
           id="f-units"
           name="unites_min"
@@ -157,28 +162,28 @@ export function LandFilters({
           min="1"
           defaultValue={values.unitsMin ?? ''}
           className="champ"
-          placeholder="ex. 10"
+          placeholder="10"
         />
       </Field>
 
-      <Field label="Trier par" htmlFor="f-sort">
+      <Field label={t.lands.sortBy} htmlFor="f-sort">
         <select id="f-sort" name="tri" className="champ" defaultValue={values.sort ?? 'recent'}>
-          <option value="recent">Plus récents</option>
-          <option value="prix_asc">Prix croissant</option>
-          <option value="prix_desc">Prix décroissant</option>
-          <option value="surface_desc">Surface décroissante</option>
+          <option value="recent">{t.lands.sortRecent}</option>
+          <option value="prix_asc">{t.lands.sortPriceAsc}</option>
+          <option value="prix_desc">{t.lands.sortPriceDesc}</option>
+          <option value="surface_desc">{t.lands.sortSurfaceDesc}</option>
         </select>
       </Field>
 
       <div className="flex gap-2 pt-1">
         <Button type="submit" className="flex-1">
-          Filtrer
+          {t.common.filter}
         </Button>
         <a
-          href="/terrains"
+          href={resetHref}
           className="inline-flex items-center justify-center rounded-lg border border-sable-400 bg-white px-4 py-2.5 text-sm font-semibold text-encre-900 hover:bg-sable-100"
         >
-          Effacer
+          {t.common.clear}
         </a>
       </div>
     </form>

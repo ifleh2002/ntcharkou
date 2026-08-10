@@ -2,15 +2,17 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getActionTranslation } from '@/lib/i18n/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 /** Mise à jour du profil (espace utilisateur). */
 export async function updateProfile(formData: FormData) {
+  const { path } = await getActionTranslation()
   const supabase = await createSupabaseServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/connexion')
+  if (!user) redirect(path('/connexion'))
 
   await supabase
     .from('profiles')
@@ -51,17 +53,18 @@ export async function updateProfile(formData: FormData) {
     )
   }
 
-  revalidatePath('/profil')
-  revalidatePath('/tableau-de-bord')
-  redirect('/profil?enregistre=1')
+  revalidatePath(path('/profil'))
+  revalidatePath(path('/tableau-de-bord'))
+  redirect(path('/profil?enregistre=1'))
 }
 
 /** Changement de mot de passe. */
 export async function updatePassword(formData: FormData) {
+  const { path } = await getActionTranslation()
   const password = String(formData.get('password') ?? '')
-  if (password.length < 8) redirect('/parametres?erreur=mot_de_passe')
+  if (password.length < 8) redirect(path('/parametres?erreur=mot_de_passe'))
 
   const supabase = await createSupabaseServerClient()
   const { error } = await supabase.auth.updateUser({ password })
-  redirect(error ? '/parametres?erreur=mot_de_passe' : '/parametres?enregistre=1')
+  redirect(path(error ? '/parametres?erreur=mot_de_passe' : '/parametres?enregistre=1'))
 }

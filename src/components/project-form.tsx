@@ -3,13 +3,9 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { createProject } from '@/app/actions/projects'
-import { formatDh } from '@/lib/format'
-import {
-  PROFESSIONAL_BODY_LABELS,
-  PROPERTY_NEED_LABELS,
-  ZONING_LABELS,
-  ZONING_ORDER,
-} from '@/lib/labels'
+import type { Dictionary } from '@/lib/i18n'
+import type { Formatter } from '@/lib/format'
+import { PROPERTY_NEED_ORDER, ZONING_ORDER } from '@/lib/labels'
 import type { City, ProfessionalBody, PropertyNeed, Region } from '@/lib/types'
 import { CityOptions } from './city-options'
 import { Alert, Button, Field } from './ui'
@@ -18,9 +14,13 @@ export function ProjectForm({
   regions,
   cities,
   defaults,
+  t,
+  f,
 }: {
   regions: Region[]
   cities: City[]
+  t: Dictionary
+  f: Formatter
   defaults?: {
     land_id?: string
     region_code?: string
@@ -52,7 +52,7 @@ export function ProjectForm({
 
     const result = await createProject(new FormData(event.currentTarget))
     if (result.error || !result.projectId) {
-      setError(result.error ?? 'Création impossible.')
+      setError(result.error ?? t.projectForm.errCreate)
       setBusy(false)
       return
     }
@@ -65,34 +65,34 @@ export function ProjectForm({
       {defaults?.land_id ? <input type="hidden" name="land_id" value={defaults.land_id} /> : null}
 
       <section className="surface p-6">
-        <h2 className="text-lg font-bold text-encre-900">Le projet</h2>
+        <h2 className="text-lg font-bold text-encre-900">{t.projectForm.projectTitle}</h2>
 
         <div className="mt-5 space-y-4">
           <Field
-            label="Nom du groupe"
+            label={t.projectForm.groupName}
             htmlFor="title"
-            hint="Laissez vide pour un nom généré automatiquement, par exemple « Projet Médecins — 20 unités »."
+            hint={t.projectForm.groupNameHint}
           >
             <input
               id="title"
               name="title"
               className="champ"
               defaultValue={defaults?.title ?? ''}
-              placeholder="Résidence des Médecins — Casablanca"
+              placeholder={t.projectForm.groupNamePlaceholder}
             />
           </Field>
 
-          <Field label="Résumé" htmlFor="summary">
+          <Field label={t.projectForm.summary} htmlFor="summary">
             <input
               id="summary"
               name="summary"
               className="champ"
-              placeholder="Immeuble R+4 de 20 appartements, réservé aux médecins."
+              placeholder={t.projectForm.summaryPlaceholder}
             />
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Région" htmlFor="region_code" required>
+            <Field label={t.common.region} htmlFor="region_code" required>
               <select
                 id="region_code"
                 name="region_code"
@@ -101,16 +101,16 @@ export function ProjectForm({
                 value={region}
                 onChange={(event) => setRegion(event.target.value)}
               >
-                <option value="">Choisissez une région</option>
+                <option value="">{t.landForm.chooseRegion}</option>
                 {regions.map((r) => (
                   <option key={r.code} value={r.code}>
-                    {r.name_fr}
+                    {r.name}
                   </option>
                 ))}
               </select>
             </Field>
 
-            <Field label="Ville" htmlFor="city_id">
+            <Field label={t.common.city} htmlFor="city_id">
               <select
                 id="city_id"
                 name="city_id"
@@ -122,22 +122,22 @@ export function ProjectForm({
               </select>
             </Field>
 
-            <Field label="Quartier" htmlFor="district">
+            <Field label={t.common.district} htmlFor="district">
               <input id="district" name="district" className="champ" />
             </Field>
 
-            <Field label="Type de logement" htmlFor="property_need" required>
+            <Field label={t.projectForm.housingType} htmlFor="property_need" required>
               <select id="property_need" name="property_need" required className="champ" defaultValue="">
-                <option value="">Choisissez une typologie</option>
-                {(Object.keys(PROPERTY_NEED_LABELS) as PropertyNeed[]).map((key) => (
+                <option value="">{t.projectForm.chooseTypology}</option>
+                {PROPERTY_NEED_ORDER.map((key) => (
                   <option key={key} value={key}>
-                    {PROPERTY_NEED_LABELS[key]}
+                    {t.enums.propertyNeed[key]}
                   </option>
                 ))}
               </select>
             </Field>
 
-            <Field label="Zonage visé" htmlFor="zoning">
+            <Field label={t.projectForm.zoningTarget} htmlFor="zoning">
               <select
                 id="zoning"
                 name="zoning"
@@ -147,13 +147,13 @@ export function ProjectForm({
                 <option value="">—</option>
                 {ZONING_ORDER.map((zoning) => (
                   <option key={zoning} value={zoning}>
-                    {ZONING_LABELS[zoning]}
+                    {t.enums.zoning[zoning]}
                   </option>
                 ))}
               </select>
             </Field>
 
-            <Field label="Nombre de logements" htmlFor="units_planned" required>
+            <Field label={t.projectForm.unitsPlanned} htmlFor="units_planned" required>
               <input
                 id="units_planned"
                 name="units_planned"
@@ -167,10 +167,10 @@ export function ProjectForm({
             </Field>
 
             <Field
-              label="Participants recherchés"
+              label={t.projectForm.participantsTarget}
               htmlFor="participants_target"
               required
-              hint="Souvent égal au nombre de logements."
+              hint={t.projectForm.participantsTargetHint}
             >
               <input
                 id="participants_target"
@@ -183,7 +183,7 @@ export function ProjectForm({
               />
             </Field>
 
-            <Field label="Budget par logement (DH)" htmlFor="budget_per_unit">
+            <Field label={t.projectForm.budgetPerUnit} htmlFor="budget_per_unit">
               <input
                 id="budget_per_unit"
                 name="budget_per_unit"
@@ -199,28 +199,27 @@ export function ProjectForm({
 
           <div className="rounded-lg border border-zellige-200 bg-zellige-50 p-4">
             <p className="text-xs font-semibold tracking-wide text-zellige-700 uppercase">
-              Enveloppe totale du projet
+              {t.projectForm.totalEnvelope}
             </p>
             <p className="mt-1 text-xl font-bold text-zellige-800">
-              {totalBudget !== null ? formatDh(totalBudget) : '—'}
+              {totalBudget !== null ? f.dh(totalBudget) : '—'}
             </p>
           </div>
         </div>
       </section>
 
       <section className="surface p-6">
-        <h2 className="text-lg font-bold text-encre-900">Groupe professionnel</h2>
+        <h2 className="text-lg font-bold text-encre-900">{t.projectForm.bodyTitle}</h2>
         <p className="mt-1 text-sm text-encre-500">
-          Vous pouvez réserver ce groupe à un corps professionnel précis — médecins, enseignants,
-          ingénieurs… Laissez vide pour l’ouvrir à tous.
+          {t.projectForm.bodyLead}
         </p>
         <div className="mt-4 max-w-sm">
-          <Field label="Réservé au corps professionnel" htmlFor="restricted_to_body">
+          <Field label={t.projectForm.bodyField} htmlFor="restricted_to_body">
             <select id="restricted_to_body" name="restricted_to_body" className="champ" defaultValue="">
-              <option value="">Ouvert à tous</option>
-              {(Object.keys(PROFESSIONAL_BODY_LABELS) as ProfessionalBody[]).map((key) => (
+              <option value="">{t.projectForm.bodyOpen}</option>
+              {(Object.keys(t.enums.professionalBody) as ProfessionalBody[]).map((key) => (
                 <option key={key} value={key}>
-                  {PROFESSIONAL_BODY_LABELS[key]}
+                  {t.enums.professionalBody[key]}
                 </option>
               ))}
             </select>
@@ -229,23 +228,23 @@ export function ProjectForm({
       </section>
 
       <section className="surface p-6">
-        <Field label="Description détaillée" htmlFor="description">
+        <Field label={t.projectForm.description} htmlFor="description">
           <textarea
             id="description"
             name="description"
             rows={6}
             className="champ"
-            placeholder="Présentez le projet, le calendrier envisagé, le mode de financement…"
+            placeholder={t.projectForm.descriptionPlaceholder}
           />
         </Field>
       </section>
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" size="lg" variant="collectif" disabled={busy}>
-          {busy ? 'Création…' : 'Créer mon groupe'}
+          {busy ? t.projectForm.creating : t.projectForm.submit}
         </Button>
         <p className="text-sm text-encre-400">
-          Votre groupe sera analysé par l’administration avant d’être ouvert aux candidatures.
+          {t.projectForm.submitNote}
         </p>
       </div>
     </form>

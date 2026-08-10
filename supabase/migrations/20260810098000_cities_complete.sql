@@ -17,11 +17,12 @@
 -- =============================================================================
 
 -- --- Corrections du jeu initial ---------------------------------------------
--- « Ouarzazate Massa » n'existe pas, et « Chtouka Aït Baha » est une province,
--- pas une ville (son chef-lieu est Biougra, inséré plus bas).
+-- Trois entrées à retirer : « Ouarzazate Massa » n'existe pas, tandis que
+-- « Chtouka Aït Baha » et « Assa-Zag » sont des provinces et non des villes
+-- (leurs chefs-lieux, Biougra et Assa, figurent bien dans la liste ci-dessous).
 delete from public.cities
- where region_code = 'souss-massa'
-   and name_fr in ('Ouarzazate Massa', 'Chtouka Aït Baha');
+ where (region_code = 'souss-massa' and name_fr in ('Ouarzazate Massa', 'Chtouka Aït Baha'))
+    or (region_code = 'guelmim-oued-noun' and name_fr = 'Assa-Zag');
 
 -- --- Ajout des communes urbaines --------------------------------------------
 insert into public.cities (region_code, name_fr, is_major) values

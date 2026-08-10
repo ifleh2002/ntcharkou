@@ -45,7 +45,7 @@ export function CitySelect({
           <option value="">—</option>
           {regions.map((r) => (
             <option key={r.code} value={r.code}>
-              {r.name_fr}
+              {r.name}
             </option>
           ))}
         </select>

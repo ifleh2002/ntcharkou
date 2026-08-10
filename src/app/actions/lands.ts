@@ -2,8 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { getActionTranslation } from '@/lib/i18n/server'
+import { firstIssueMessage } from './validation'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { ZONING_LABELS } from '@/lib/labels'
 import type { LandZoning } from '@/lib/types'
 
 export interface LandActionResult {
@@ -91,21 +92,31 @@ function checked(value: string | undefined) {
 /** Depot d'un terrain (formulaire propriétaire en 6 étapes, section 3). */
 export async function saveLand(formData: FormData): Promise<LandActionResult> {
   const supabase = await createSupabaseServerClient()
+  const { t } = await getActionTranslation()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: 'Vous devez être connecté pour proposer un terrain.' }
+  if (!user) return { error: t.auth.errCredentials }
 
   const parsed = landSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? 'Formulaire incomplet.' }
+    return {
+      error: firstIssueMessage(t, parsed.error, {
+        first_name: t.auth.firstName,
+        last_name: t.auth.lastName,
+        phone: t.auth.phone,
+        contact_email: t.auth.email,
+        region_code: t.common.region,
+        zoning: t.lands.zoning,
+        surface_m2: t.landForm.surface,
+      }),
+    }
   }
   const values = parsed.data
 
   const cityId = values.city_id || null
-  const title =
-    values.title ||
-    `${ZONING_LABELS[values.zoning as LandZoning]} — ${values.city_other || 'Maroc'}`
+  // Titre généré dans la langue de saisie du propriétaire.
+  const title = values.title || t.enums.zoning[values.zoning as LandZoning]
 
   // Etape 1 : les informations personnelles alimentent le profil, jamais l'annonce.
   await supabase
@@ -168,35 +179,38 @@ export async function saveLand(formData: FormData): Promise<LandActionResult> {
     .single()
 
   if (error) {
-    return { error: `Enregistrement impossible : ${error.message}` }
+    return { error: `${t.landForm.errSave} ${error.message}` }
   }
 
-  revalidatePath('/mes-terrains')
+  revalidatePath('/', 'layout')
   return { landId: data.id as string }
 }
 
 /** Soumet un brouillon à la validation administrative. */
 export async function submitLand(formData: FormData) {
   const landId = formData.get('land_id') as string
+  const { path } = await getActionTranslation()
   const supabase = await createSupabaseServerClient()
   await supabase.from('land_listings').update({ status: 'soumis' }).eq('id', landId)
-  revalidatePath('/mes-terrains')
-  revalidatePath(`/mes-terrains/${landId}`)
+  revalidatePath(path('/mes-terrains'))
+  revalidatePath(path(`/mes-terrains/${landId}`))
 }
 
 /** Retire une annonce de la publication. */
 export async function archiveLand(formData: FormData) {
   const landId = formData.get('land_id') as string
+  const { path } = await getActionTranslation()
   const supabase = await createSupabaseServerClient()
   await supabase.from('land_listings').update({ status: 'archive' }).eq('id', landId)
-  revalidatePath('/mes-terrains')
-  revalidatePath(`/mes-terrains/${landId}`)
+  revalidatePath(path('/mes-terrains'))
+  revalidatePath(path(`/mes-terrains/${landId}`))
 }
 
 /** Supprime un brouillon. */
 export async function deleteLand(formData: FormData) {
   const landId = formData.get('land_id') as string
+  const { path } = await getActionTranslation()
   const supabase = await createSupabaseServerClient()
   await supabase.from('land_listings').delete().eq('id', landId)
-  revalidatePath('/mes-terrains')
+  revalidatePath(path('/mes-terrains'))
 }

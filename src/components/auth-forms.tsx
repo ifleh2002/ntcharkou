@@ -3,18 +3,19 @@
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { signIn, signUp, type ActionState } from '@/app/actions/auth'
+import type { Dictionary } from '@/lib/i18n'
 import { Alert, Button, Checkbox, Field } from './ui'
 
-function SubmitButton({ children }: { children: React.ReactNode }) {
+function SubmitButton({ children, pendingLabel }: { children: React.ReactNode; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <Button type="submit" size="lg" className="w-full" disabled={pending}>
-      {pending ? 'Veuillez patienter…' : children}
+      {pending ? pendingLabel : children}
     </Button>
   )
 }
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, t }: { next: string; t: Dictionary }) {
   const [state, formAction] = useActionState<ActionState, FormData>(signIn, {})
 
   return (
@@ -23,7 +24,7 @@ export function LoginForm({ next }: { next: string }) {
 
       {state.error ? <Alert tone="danger">{state.error}</Alert> : null}
 
-      <Field label="Adresse email" htmlFor="email" required>
+      <Field label={t.auth.email} htmlFor="email" required>
         <input
           id="email"
           name="email"
@@ -31,11 +32,11 @@ export function LoginForm({ next }: { next: string }) {
           autoComplete="email"
           required
           className="champ"
-          placeholder="vous@exemple.ma"
+          placeholder="nom@example.ma"
         />
       </Field>
 
-      <Field label="Mot de passe" htmlFor="password" required>
+      <Field label={t.auth.password} htmlFor="password" required>
         <input
           id="password"
           name="password"
@@ -46,12 +47,18 @@ export function LoginForm({ next }: { next: string }) {
         />
       </Field>
 
-      <SubmitButton>Se connecter</SubmitButton>
+      <SubmitButton pendingLabel={t.common.loading}>{t.auth.loginSubmit}</SubmitButton>
     </form>
   )
 }
 
-export function SignupForm({ defaultRole }: { defaultRole: 'participant' | 'owner' }) {
+export function SignupForm({
+  defaultRole,
+  t,
+}: {
+  defaultRole: 'participant' | 'owner'
+  t: Dictionary
+}) {
   const [state, formAction] = useActionState<ActionState, FormData>(signUp, {})
 
   return (
@@ -60,11 +67,15 @@ export function SignupForm({ defaultRole }: { defaultRole: 'participant' | 'owne
       {state.success ? <Alert tone="succes">{state.success}</Alert> : null}
 
       <fieldset>
-        <legend className="etiquette">Je m’inscris en tant que</legend>
+        <legend className="etiquette">{t.auth.roleLegend}</legend>
         <div className="grid grid-cols-2 gap-2">
           {[
-            { value: 'participant', label: '👥 Participant', hint: 'Je cherche un logement' },
-            { value: 'owner', label: '🏞️ Propriétaire', hint: 'Je propose un terrain' },
+            {
+              value: 'participant',
+              label: `👥 ${t.auth.roleParticipant}`,
+              hint: t.auth.roleParticipantHint,
+            },
+            { value: 'owner', label: `🏞️ ${t.auth.roleOwner}`, hint: t.auth.roleOwnerHint },
           ].map((option) => (
             <label
               key={option.value}
@@ -85,15 +96,15 @@ export function SignupForm({ defaultRole }: { defaultRole: 'participant' | 'owne
       </fieldset>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Prénom" htmlFor="first_name" required>
+        <Field label={t.auth.firstName} htmlFor="first_name" required>
           <input id="first_name" name="first_name" required className="champ" />
         </Field>
-        <Field label="Nom" htmlFor="last_name" required>
+        <Field label={t.auth.lastName} htmlFor="last_name" required>
           <input id="last_name" name="last_name" required className="champ" />
         </Field>
       </div>
 
-      <Field label="Adresse email" htmlFor="signup-email" required>
+      <Field label={t.auth.email} htmlFor="signup-email" required>
         <input
           id="signup-email"
           name="email"
@@ -104,11 +115,11 @@ export function SignupForm({ defaultRole }: { defaultRole: 'participant' | 'owne
         />
       </Field>
 
-      <Field label="Téléphone" htmlFor="phone" hint="Utilisé uniquement par l’administration, jamais publié.">
+      <Field label={t.auth.phone} htmlFor="phone" hint={t.auth.phoneHint}>
         <input id="phone" name="phone" type="tel" className="champ" placeholder="06 00 00 00 00" />
       </Field>
 
-      <Field label="Mot de passe" htmlFor="signup-password" hint="8 caractères minimum." required>
+      <Field label={t.auth.password} htmlFor="signup-password" hint={t.auth.passwordHint} required>
         <input
           id="signup-password"
           name="password"
@@ -123,15 +134,10 @@ export function SignupForm({ defaultRole }: { defaultRole: 'participant' | 'owne
       <Checkbox
         name="terms"
         value="1"
-        label={
-          <>
-            J’accepte les conditions d’utilisation et la politique de confidentialité de la
-            plateforme.
-          </>
-        }
+        label={t.auth.terms}
       />
 
-      <SubmitButton>Créer mon compte</SubmitButton>
+      <SubmitButton pendingLabel={t.common.loading}>{t.auth.signupSubmit}</SubmitButton>
     </form>
   )
 }

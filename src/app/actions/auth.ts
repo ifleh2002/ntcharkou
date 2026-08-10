@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getActionTranslation } from '@/lib/i18n/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 export interface ActionState {
@@ -13,20 +14,21 @@ export async function signIn(_prev: ActionState, formData: FormData): Promise<Ac
   const email = String(formData.get('email') ?? '').trim()
   const password = String(formData.get('password') ?? '')
   const next = String(formData.get('suivant') ?? '/tableau-de-bord')
+  const { t, path } = await getActionTranslation()
 
   if (!email || !password) {
-    return { error: 'Renseignez votre email et votre mot de passe.' }
+    return { error: t.auth.errMissing }
   }
 
   const supabase = await createSupabaseServerClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
-    return { error: 'Identifiants incorrects. Vérifiez votre email et votre mot de passe.' }
+    return { error: t.auth.errCredentials }
   }
 
   revalidatePath('/', 'layout')
-  redirect(next.startsWith('/') ? next : '/tableau-de-bord')
+  redirect(path(next.startsWith('/') ? next : '/tableau-de-bord'))
 }
 
 export async function signUp(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -38,10 +40,12 @@ export async function signUp(_prev: ActionState, formData: FormData): Promise<Ac
   const role = String(formData.get('role') ?? 'participant')
   const terms = formData.get('terms')
 
-  if (!firstName || !lastName) return { error: 'Renseignez votre nom et votre prénom.' }
-  if (!email) return { error: 'Renseignez votre adresse email.' }
-  if (password.length < 8) return { error: 'Le mot de passe doit contenir au moins 8 caractères.' }
-  if (!terms) return { error: 'Vous devez accepter les conditions d’utilisation.' }
+  const { t, path, locale } = await getActionTranslation()
+
+  if (!firstName || !lastName) return { error: t.auth.errName }
+  if (!email) return { error: t.auth.errEmail }
+  if (password.length < 8) return { error: t.auth.errPassword }
+  if (!terms) return { error: t.auth.errTerms }
 
   const supabase = await createSupabaseServerClient()
   const { error } = await supabase.auth.signUp({
@@ -54,15 +58,15 @@ export async function signUp(_prev: ActionState, formData: FormData): Promise<Ac
         phone,
         role: role === 'owner' ? 'owner' : 'participant',
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/tableau-de-bord`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/${locale}/tableau-de-bord`,
     },
   })
 
   if (error) {
     if (error.message.toLowerCase().includes('already')) {
-      return { error: 'Un compte existe déjà avec cette adresse email.' }
+      return { error: t.auth.errExists }
     }
-    return { error: `Inscription impossible : ${error.message}` }
+    return { error: error.message }
   }
 
   // Selon la configuration Supabase, la session peut necessiter une
@@ -72,13 +76,14 @@ export async function signUp(_prev: ActionState, formData: FormData): Promise<Ac
   } = await supabase.auth.getUser()
 
   revalidatePath('/', 'layout')
-  if (user) redirect('/tableau-de-bord')
-  return { success: 'Compte créé. Confirmez votre adresse email puis connectez-vous.' }
+  if (user) redirect(path('/tableau-de-bord'))
+  return { success: t.auth.signupOk }
 }
 
 export async function signOut() {
   const supabase = await createSupabaseServerClient()
+  const { path } = await getActionTranslation()
   await supabase.auth.signOut()
   revalidatePath('/', 'layout')
-  redirect('/')
+  redirect(path('/'))
 }

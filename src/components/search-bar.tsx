@@ -2,36 +2,50 @@ import type { Region } from '@/lib/types'
 import { Button } from './ui'
 
 /** Barre de recherche de la page d'accueil (section 24) — formulaire GET simple. */
-export function SearchBar({ regions }: { regions: Region[] }) {
+export function SearchBar({
+  regions,
+  action,
+  placeholder,
+  allRegions,
+  regionLabel,
+  submitLabel,
+}: {
+  regions: Region[]
+  action: string
+  placeholder: string
+  allRegions: string
+  regionLabel: string
+  submitLabel: string
+}) {
   return (
-    <form action="/terrains" method="get" className="surface flex flex-col gap-3 p-4 sm:flex-row">
+    <form action={action} method="get" className="surface flex flex-col gap-3 p-4 sm:flex-row">
       <div className="flex-1">
         <label className="sr-only" htmlFor="recherche-q">
-          Où souhaitez-vous construire ?
+          {placeholder}
         </label>
         <input
           id="recherche-q"
           name="q"
           type="search"
           className="champ"
-          placeholder="🔎 Où souhaitez-vous construire ?"
+          placeholder={`🔎 ${placeholder}`}
         />
       </div>
       <div className="sm:w-64">
         <label className="sr-only" htmlFor="recherche-region">
-          Région
+          {regionLabel}
         </label>
         <select id="recherche-region" name="region" className="champ" defaultValue="">
-          <option value="">Toutes les régions</option>
+          <option value="">{allRegions}</option>
           {regions.map((region) => (
             <option key={region.code} value={region.code}>
-              {region.name_fr}
+              {region.name}
             </option>
           ))}
         </select>
       </div>
       <Button type="submit" size="md" className="sm:px-8">
-        Rechercher
+        {submitLabel}
       </Button>
     </form>
   )

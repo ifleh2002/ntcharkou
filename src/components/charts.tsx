@@ -9,14 +9,14 @@ export interface Datum {
 /** Barres horizontales — lisible même avec des libellés longs (régions, typologies). */
 export function BarList({
   data,
+  emptyLabel,
   tone = 'argile',
   formatValue = (value: number) => String(value),
-  emptyLabel = 'Aucune donnée',
 }: {
   data: Datum[]
+  emptyLabel: string
   tone?: 'argile' | 'zellige'
   formatValue?: (value: number) => string
-  emptyLabel?: string
 }) {
   const max = Math.max(1, ...data.map((d) => d.value))
   if (data.length === 0) {
@@ -39,7 +39,7 @@ export function BarList({
               style={{ width: `${(datum.value / max) * 100}%` }}
             />
           </span>
-          <span className="w-16 shrink-0 text-right text-sm font-semibold text-encre-900">
+          <span className="w-16 shrink-0 text-end text-sm font-semibold text-encre-900">
             {formatValue(datum.value)}
           </span>
         </li>
@@ -59,14 +59,16 @@ export interface SeriesPoint {
 export function LineChart({
   points,
   seriesLabels,
+  emptyLabel,
   height = 180,
 }: {
   points: SeriesPoint[]
   seriesLabels: string[]
+  emptyLabel: string
   height?: number
 }) {
   if (points.length === 0) {
-    return <p className="py-6 text-center text-sm text-encre-400">Aucune donnée</p>
+    return <p className="py-6 text-center text-sm text-encre-400">{emptyLabel}</p>
   }
 
   const seriesCount = seriesLabels.length
@@ -83,12 +85,12 @@ export function LineChart({
   const colors = ['var(--color-argile-500)', 'var(--color-zellige-500)']
 
   return (
-    <div className="overflow-x-auto">
+    <div className="chart-ltr overflow-x-auto" dir="ltr">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         className="h-auto w-full min-w-[420px]"
         role="img"
-        aria-label={`Évolution : ${seriesLabels.join(', ')}`}
+        aria-label={seriesLabels.join(', ')}
       >
         {[0, 0.5, 1].map((ratio) => (
           <g key={ratio}>
@@ -169,12 +171,14 @@ export function LineChart({
 /** Répartition en segments empilés (qualité des scores de matching). */
 export function SegmentBar({
   segments,
+  emptyLabel,
 }: {
   segments: { label: string; value: number; color: string }[]
+  emptyLabel: string
 }) {
   const total = segments.reduce((sum, segment) => sum + segment.value, 0)
   if (total === 0) {
-    return <p className="py-4 text-center text-sm text-encre-400">Aucune correspondance</p>
+    return <p className="py-4 text-center text-sm text-encre-400">{emptyLabel}</p>
   }
 
   return (

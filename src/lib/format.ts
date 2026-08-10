@@ -1,69 +1,100 @@
-const dhFormatter = new Intl.NumberFormat('fr-MA', { maximumFractionDigits: 0 })
-const dateFormatter = new Intl.DateTimeFormat('fr-MA', {
-  day: '2-digit',
-  month: 'long',
-  year: 'numeric',
-})
+import type { Dictionary } from './i18n/dictionaries/fr'
+import { interpolate, type Locale } from './i18n'
 
-/** 3000000 -> « 3 000 000 DH » */
-export function formatDh(value: number | null | undefined): string {
-  if (value === null || value === undefined) return 'Prix non communiqué'
-  return `${dhFormatter.format(Math.round(value))} DH`
+/**
+ * Les montants et surfaces gardent les chiffres « arabes occidentaux »
+ * (1, 2, 3) dans les deux langues : c'est l'usage au Maroc, y compris dans les
+ * documents en arabe. D'où le suffixe `-u-nu-latn` sur la locale arabe.
+ */
+const INTL_LOCALE: Record<Locale, string> = {
+  fr: 'fr-MA',
+  ar: 'ar-MA-u-nu-latn',
 }
 
-/** Formes compactes pour les KPI : 9 600 000 -> « 9,6 M DH ». */
-export function formatDhCompact(value: number | null | undefined): string {
-  if (value === null || value === undefined) return '—'
-  if (Math.abs(value) >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1).replace('.', ',')} M DH`
+export type ScoreTone = 'excellent' | 'bon' | 'moyen' | 'faible'
+
+/** Qualification d'un score de matching (section 22 du cahier des charges). */
+export function scoreTone(score: number): ScoreTone {
+  if (score >= 90) return 'excellent'
+  if (score >= 75) return 'bon'
+  if (score >= 60) return 'moyen'
+  return 'faible'
+}
+
+export function createFormatter(locale: Locale, t: Dictionary) {
+  const intl = INTL_LOCALE[locale]
+  const numbers = new Intl.NumberFormat(intl, { maximumFractionDigits: 0 })
+  const dates = new Intl.DateTimeFormat(intl, {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  })
+  const currency = locale === 'ar' ? 'درهم' : 'DH'
+  const sqm = locale === 'ar' ? 'م²' : 'm²'
+
+  function number(value: number | null | undefined): string {
+    if (value === null || value === undefined) return '—'
+    return numbers.format(value)
   }
-  if (Math.abs(value) >= 1_000) {
-    return `${Math.round(value / 1_000)} k DH`
+
+  function dh(value: number | null | undefined): string {
+    if (value === null || value === undefined) return t.common.priceNotProvided
+    return `${numbers.format(Math.round(value))} ${currency}`
   }
-  return `${dhFormatter.format(value)} DH`
+
+  function dhCompact(value: number | null | undefined): string {
+    if (value === null || value === undefined) return '—'
+    if (Math.abs(value) >= 1_000_000) {
+      const millions = (value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1)
+      return `${locale === 'fr' ? millions.replace('.', ',') : millions} M ${currency}`
+    }
+    if (Math.abs(value) >= 1_000) {
+      return `${Math.round(value / 1_000)} k ${currency}`
+    }
+    return `${numbers.format(value)} ${currency}`
+  }
+
+  function surface(value: number | null | undefined): string {
+    if (value === null || value === undefined) return '—'
+    return `${numbers.format(value)} ${sqm}`
+  }
+
+  function percent(value: number | null | undefined, decimals = 0): string {
+    if (value === null || value === undefined) return '—'
+    const text = value.toFixed(decimals)
+    return `${locale === 'fr' ? text.replace('.', ',') : text} %`
+  }
+
+  function date(value: string | null | undefined): string {
+    if (!value) return '—'
+    return dates.format(new Date(value))
+  }
+
+  function relative(value: string | null | undefined): string {
+    if (!value) return '—'
+    const diff = Date.now() - new Date(value).getTime()
+    const minutes = Math.round(diff / 60000)
+    if (minutes < 1) return t.time.justNow
+    if (minutes < 60) return interpolate(t.time.minutesAgo, { n: minutes })
+    const hours = Math.round(minutes / 60)
+    if (hours < 24) return interpolate(t.time.hoursAgo, { n: hours })
+    const days = Math.round(hours / 24)
+    if (days < 31) return interpolate(t.time.daysAgo, { n: days })
+    return date(value)
+  }
+
+  /** Libellé du score, dans la langue courante. */
+  function scoreLabel(score: number): string {
+    const tone = scoreTone(score)
+    return {
+      excellent: t.score.excellent,
+      bon: t.score.good,
+      moyen: t.score.fair,
+      faible: t.score.low,
+    }[tone]
+  }
+
+  return { number, dh, dhCompact, surface, percent, date, relative, scoreLabel, currency, sqm }
 }
 
-export function formatSurface(value: number | null | undefined): string {
-  if (value === null || value === undefined) return '—'
-  return `${dhFormatter.format(value)} m²`
-}
-
-export function formatNumber(value: number | null | undefined): string {
-  if (value === null || value === undefined) return '—'
-  return dhFormatter.format(value)
-}
-
-export function formatPercent(value: number | null | undefined, decimals = 0): string {
-  if (value === null || value === undefined) return '—'
-  return `${value.toFixed(decimals).replace('.', ',')} %`
-}
-
-export function formatDate(value: string | null | undefined): string {
-  if (!value) return '—'
-  return dateFormatter.format(new Date(value))
-}
-
-export function formatRelativeDate(value: string | null | undefined): string {
-  if (!value) return '—'
-  const diff = Date.now() - new Date(value).getTime()
-  const minutes = Math.round(diff / 60000)
-  if (minutes < 1) return "à l'instant"
-  if (minutes < 60) return `il y a ${minutes} min`
-  const hours = Math.round(minutes / 60)
-  if (hours < 24) return `il y a ${hours} h`
-  const days = Math.round(hours / 24)
-  if (days < 31) return `il y a ${days} j`
-  return formatDate(value)
-}
-
-/** Qualification textuelle d'un score de matching (section 22). */
-export function scoreLabel(score: number): { label: string; tone: 'excellent' | 'bon' | 'moyen' | 'faible' } {
-  if (score >= 90) return { label: 'Excellent match', tone: 'excellent' }
-  if (score >= 75) return { label: 'Très bon match', tone: 'bon' }
-  if (score >= 60) return { label: 'Match intéressant', tone: 'moyen' }
-  return { label: 'Faible correspondance', tone: 'faible' }
-}
-
-export function pluralize(count: number, singular: string, plural?: string): string {
-  return count > 1 ? (plural ?? `${singular}s`) : singular
-}
+export type Formatter = ReturnType<typeof createFormatter>

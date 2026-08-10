@@ -1,6 +1,6 @@
 # Ntcharkou
 
-**Place de marché du logement participatif au Maroc.**
+**Place de marché du logement participatif au Maroc — interface bilingue français / arabe.**
 
 La plateforme relie quatre éléments — terrains disponibles ↔ demandes des participants ↔
 groupes de projet ↔ validation administrative — et, surtout, **effectue automatiquement le
@@ -14,6 +14,7 @@ rapprochement** entre les terrains publiés et les besoins réels exprimés par 
 - [Démarrage rapide](#démarrage-rapide)
 - [Architecture](#architecture)
 - [Le moteur de matching](#le-moteur-de-matching)
+- [Bilingue français / arabe](#bilingue-français--arabe)
 - [Sécurité et confidentialité](#sécurité-et-confidentialité)
 - [Tests](#tests)
 - [Arborescence](#arborescence)
@@ -27,16 +28,18 @@ Les six modules du MVP :
 
 | Module | État | Où |
 | --- | --- | --- |
-| **1. Authentification** | Inscription participant / propriétaire, connexion, profil, rôles, suspension | `src/app/(site)/connexion`, `inscription`, `profil` |
-| **2. Terrains** | Formulaire en 6 étapes, photos, documents privés, workflow de validation | `src/components/land-form.tsx`, `src/app/(site)/(espace)/mes-terrains` |
-| **3. Demandes participants** | Typologies multiples, budget total *et* par unité, unités, groupe professionnel | `src/components/request-form.tsx`, `src/app/(site)/(espace)/mes-demandes` |
+| **1. Authentification** | Inscription participant / propriétaire, connexion, profil, rôles, suspension | `src/app/[locale]/(site)/connexion`, `inscription`, `profil` |
+| **2. Terrains** | Formulaire en 6 étapes, photos, documents privés, workflow de validation | `src/components/land-form.tsx`, `src/app/[locale]/(site)/(espace)/mes-terrains` |
+| **3. Demandes participants** | Typologies multiples, budget total *et* par unité, unités, groupe professionnel | `src/components/request-form.tsx`, `src/app/[locale]/(site)/(espace)/mes-demandes` |
 | **4. Matching automatique** | Score pondéré à 7 critères, dans les deux sens, notifications | `supabase/migrations/*_matching.sql` |
-| **5. Projets participatifs** | Création de groupe, candidatures, constitution automatique, workflow | `src/app/(site)/projets`, `mes-projets` |
-| **6. Administration + KPI** | Back-office séparé, validations, KPI, graphiques, signalements | `src/app/admin` |
+| **5. Projets participatifs** | Création de groupe, candidatures, constitution automatique, workflow | `src/app/[locale]/(site)/projets`, `mes-projets` |
+| **6. Administration + KPI** | Back-office séparé, validations, KPI, graphiques, signalements | `src/app/[locale]/admin` |
 
 Le reste de l'espace public (accueil, recherche filtrée, fiche terrain, fiche projet,
 « Comment ça marche ? », FAQ, à propos, contact) et de l'espace utilisateur (tableau de bord,
 favoris, notifications, paramètres) est également en place.
+
+**L'ensemble est bilingue français / arabe**, y compris le back-office — voir la section dédiée.
 
 Volontairement **hors périmètre du MVP**, comme prévu : messagerie interne, SMS/WhatsApp,
 paiements, gestion documentaire avancée, cartographie.
@@ -71,7 +74,7 @@ Ou en collant les fichiers de `supabase/migrations/` **dans l'ordre alphabétiqu
 l'éditeur SQL du tableau de bord. Ils créent le schéma, le moteur de matching, les règles RLS,
 les KPI, le référentiel géographique et les buckets de stockage.
 
-**Référentiel géographique** : les 12 régions administratives du Royaume et 283 communes
+**Référentiel géographique** : les 12 régions administratives du Royaume et 282 communes
 urbaines, chaque région étant pourvue.
 
 | Région | Villes | Région | Villes |
@@ -79,7 +82,7 @@ urbaines, chaque région étant pourvue.
 | Tanger-Tétouan-Al Hoceïma | 22 | Marrakech-Safi | 26 |
 | L'Oriental | 29 | Drâa-Tafilalet | 26 |
 | Fès-Meknès | 34 | Souss-Massa | 28 |
-| Rabat-Salé-Kénitra | 32 | Guelmim-Oued Noun | 12 |
+| Rabat-Salé-Kénitra | 32 | Guelmim-Oued Noun | 11 |
 | Béni Mellal-Khénifra | 24 | Laâyoune-Sakia El Hamra | 9 |
 | Casablanca-Settat | 33 | Dakhla-Oued Ed-Dahab | 8 |
 
@@ -271,6 +274,68 @@ Après un changement de formule, recalculez l'existant depuis le back-office
 
 ---
 
+## Bilingue français / arabe
+
+Toute l'interface existe dans les deux langues : espace public, espace utilisateur **et**
+back-office. L'arabe s'affiche de droite à gauche, avec sa propre pile de polices.
+
+### URL
+
+Chaque page porte son préfixe de langue — `/fr/terrains`, `/ar/terrains` — donc chaque version
+est partageable et indexable séparément. Une URL sans préfixe est redirigée vers la langue
+retenue : le cookie de l'utilisateur d'abord, sinon l'en-tête `Accept-Language`, sinon le
+français. Le chemin, lui, reste écrit en français dans le code et dans l'URL : une seule
+arborescence de routes à maintenir.
+
+Le sélecteur de langue de l'en-tête reste sur la page courante, paramètres de recherche
+compris.
+
+### Où vivent les textes
+
+```
+src/lib/i18n/
+  config.ts               langues, préfixage des chemins, négociation Accept-Language
+  index.ts                accès au dictionnaire
+  server.ts               `translation(locale)` → { t, path, f }
+  dictionaries/fr.ts      référence de structure
+  dictionaries/ar.ts      miroir arabe, typé sur la précédente
+```
+
+`ar.ts` est typé `Dictionary`, c'est-à-dire la forme exacte de `fr.ts` : **une clé oubliée ou
+en trop casse la compilation**. Il n'y a pas de traduction manquante silencieuse.
+
+Chaque page reçoit `params.locale` et appelle `translation(locale)`, qui renvoie trois choses :
+
+| | rôle |
+| --- | --- |
+| `t` | les textes |
+| `path('/terrains')` | le chemin préfixé par la langue |
+| `f` | les formats (montants, surfaces, dates, pourcentages) accordés à la langue |
+
+### Ce que la langue change vraiment
+
+- **Sens de lecture** : `dir="rtl"` et propriétés CSS logiques (`ms-`, `me-`, `start-`, `end-`,
+  `border-s`) partout — aucune marge ni bordure codée en dur à gauche ou à droite.
+- **Typographie** : pile de polices arabes système et interligne plus généreux ; le crénage
+  négatif des titres, pensé pour le latin, est désactivé car il abîme les ligatures arabes.
+- **Dates** : `10 août 2026` devient `10 غشت 2026` (mois marocains).
+- **Montants** : le suffixe passe de `DH` à `درهم`, `m²` à `م²`.
+- **Chiffres** : ils restent en chiffres arabes occidentaux (1, 2, 3) dans les deux langues,
+  usage courant au Maroc jusque dans les documents en arabe.
+- **Tri des villes** : alphabétique dans la langue affichée (`Intl.Collator`).
+- **Toponymie** : les 12 régions et les 282 communes portent leur nom arabe en base ; les vues
+  publiques exposent les deux graphies et l'application choisit, avec repli sur le français.
+- **Éléments toujours lus de gauche à droite** : références (`TER-2026-000128`), emails,
+  téléphones, et l'axe temporel des graphiques.
+
+### Ajouter une langue
+
+Ajoutez le code dans `LOCALES`, son sens de lecture dans `LOCALE_META`, et un dictionnaire
+dans `dictionaries/`. Le compilateur signalera alors chaque clé manquante. Côté base, une
+colonne `name_xx` sur `regions` et `cities` suffit.
+
+---
+
 ## Sécurité et confidentialité
 
 **Aucune coordonnée personnelle n'apparaît sur les pages publiques** : ni téléphone, ni email,
@@ -331,13 +396,16 @@ Ce que la suite couvre :
 ```
 src/
   app/
-    (site)/                    espace public + espace utilisateur
-      (espace)/                pages protégées (tableau de bord, demandes, terrains…)
-      terrains/  projets/      recherche et fiches publiques
-    admin/                     back-office, totalement séparé
+    [locale]/                  segment de langue : /fr/… et /ar/…
+      (site)/                  espace public + espace utilisateur
+        (espace)/              pages protégées (tableau de bord, demandes, terrains…)
+        terrains/  projets/    recherche et fiches publiques
+      admin/                   back-office, totalement séparé
     actions/                   Server Actions (auth, terrains, demandes, projets, admin)
   components/                  UI, formulaires, cartes, graphiques SVG
-  lib/                         types, libellés FR, formatage, requêtes, clients Supabase
+  lib/
+    i18n/                      langues, dictionnaires FR/AR, helpers serveur
+    …                          types, formatage, requêtes, clients Supabase
 supabase/
   migrations/                  schéma, matching, RLS, KPI, référentiel, privilèges
   functions/notify/            Edge Function d'envoi des emails
@@ -360,3 +428,9 @@ Par ordre de valeur, une fois le MVP en service :
    données de conversion accumulées (les KPI nécessaires sont déjà collectés :
    notifications envoyées, clics, intérêts exprimés, conversions).
 6. **Paiements** et suivi financier des projets.
+7. **Relecture de la toponymie arabe** par un locuteur natif : les noms des grandes villes
+   sont sûrs, ceux de certaines petites communes d'origine amazighe gagneraient à être
+   confirmés. La colonne `name_ar` est facultative — l'application retombe sur le français.
+8. **Contenus saisis par les utilisateurs** (titres d'annonces, descriptions) : ils restent
+   dans la langue de saisie. Un affichage bilingue demanderait soit une double saisie, soit
+   une traduction automatique — c'est un choix produit, pas une limite technique.

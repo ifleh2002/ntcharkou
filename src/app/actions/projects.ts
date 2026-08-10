@@ -2,8 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { getActionTranslation } from '@/lib/i18n/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { PROFESSIONAL_BODY_PLURAL, PROPERTY_NEED_LABELS } from '@/lib/labels'
+import { firstIssueMessage } from './validation'
 import type { ProfessionalBody, PropertyNeed } from '@/lib/types'
 
 export interface ProjectActionResult {
@@ -46,25 +47,30 @@ const projectSchema = z.object({
 /** « Créer mon groupe » (section 26). Le projet part en statut « proposition ». */
 export async function createProject(formData: FormData): Promise<ProjectActionResult> {
   const supabase = await createSupabaseServerClient()
+  const { t } = await getActionTranslation()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: 'Vous devez être connecté pour créer un groupe.' }
+  if (!user) return { error: t.auth.errCredentials }
 
   const parsed = projectSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? 'Formulaire incomplet.' }
+    return {
+      error: firstIssueMessage(t, parsed.error, {
+        region_code: t.common.region,
+        property_need: t.projectForm.housingType,
+        units_planned: t.projectForm.unitsPlanned,
+        participants_target: t.projectForm.participantsTarget,
+      }),
+    }
   }
   const values = parsed.data
 
   const body = (values.restricted_to_body || null) as ProfessionalBody | null
   const need = values.property_need as PropertyNeed
 
-  const title =
-    values.title ||
-    (body
-      ? `Projet ${PROFESSIONAL_BODY_PLURAL[body]} — ${values.units_planned} unités`
-      : `${PROPERTY_NEED_LABELS[need]} — ${values.units_planned} unités`)
+  const label = body ? t.enums.professionalBodyPlural[body] : t.enums.propertyNeed[need]
+  const title = values.title || `${label} — ${values.units_planned} ${t.common.units}`
 
   const { data, error } = await supabase
     .from('projects')
@@ -88,7 +94,7 @@ export async function createProject(formData: FormData): Promise<ProjectActionRe
     .select('id')
     .single()
 
-  if (error) return { error: `Création impossible : ${error.message}` }
+  if (error) return { error: `${t.projectForm.errCreate} ${error.message}` }
 
   // Le porteur du groupe en est le premier membre confirmé.
   await supabase.from('project_participants').insert({
@@ -98,23 +104,25 @@ export async function createProject(formData: FormData): Promise<ProjectActionRe
     status: 'accepte',
   })
 
-  revalidatePath('/mes-projets')
+  revalidatePath('/', 'layout')
   return { projectId: data.id as string }
 }
 
 /** Soumet une proposition de groupe à l'analyse de l'administration. */
 export async function submitProject(formData: FormData) {
+  const { path } = await getActionTranslation()
   const projectId = formData.get('project_id') as string
   const supabase = await createSupabaseServerClient()
   await supabase.from('projects').update({ status: 'analyse' }).eq('id', projectId)
-  revalidatePath('/mes-projets')
-  revalidatePath(`/mes-projets/${projectId}`)
+  revalidatePath(path('/mes-projets'))
+  revalidatePath(path(`/mes-projets/${projectId}`))
 }
 
 export async function cancelProject(formData: FormData) {
+  const { path } = await getActionTranslation()
   const projectId = formData.get('project_id') as string
   const supabase = await createSupabaseServerClient()
   await supabase.from('projects').update({ status: 'annule' }).eq('id', projectId)
-  revalidatePath('/mes-projets')
-  revalidatePath(`/mes-projets/${projectId}`)
+  revalidatePath(path('/mes-projets'))
+  revalidatePath(path(`/mes-projets/${projectId}`))
 }

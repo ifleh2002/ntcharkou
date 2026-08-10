@@ -102,13 +102,18 @@ export interface Region {
   name_fr: string
   name_ar: string | null
   sort_order: number
+  /** Nom résolu selon la langue de la requête (voir `src/lib/queries.ts`). */
+  name: string
 }
 
 export interface City {
   id: string
   region_code: string
   name_fr: string
+  name_ar: string | null
   is_major: boolean
+  /** Nom résolu selon la langue de la requête. */
+  name: string
 }
 
 export interface Profile {
@@ -151,8 +156,10 @@ export interface LandListingPublic {
   description: string | null
   region_code: string
   region_name: string
+  region_name_ar: string | null
   city_id: string | null
   city_name: string | null
+  city_name_ar: string | null
   district: string | null
   latitude: number | null
   longitude: number | null
@@ -217,8 +224,10 @@ export interface ProjectPublic {
   description: string | null
   region_code: string
   region_name: string
+  region_name_ar: string | null
   city_id: string | null
   city_name: string | null
+  city_name_ar: string | null
   district: string | null
   property_need: PropertyNeed
   zoning: LandZoning | null

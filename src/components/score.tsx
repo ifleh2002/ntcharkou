@@ -1,5 +1,5 @@
-import { CRITERION_LABELS } from '@/lib/labels'
-import { scoreLabel } from '@/lib/format'
+import type { Translation } from '@/lib/i18n/server'
+import { scoreTone } from '@/lib/format'
 import type { MatchBreakdown } from '@/lib/types'
 import { cx } from './ui'
 
@@ -13,19 +13,21 @@ const TONE_STYLES = {
 /** Pastille « 92 % — Excellent match » (section 22). */
 export function ScoreBadge({
   score,
+  tr,
   withLabel = true,
   size = 'md',
 }: {
   score: number
+  tr: Translation
   withLabel?: boolean
   size?: 'sm' | 'md'
 }) {
-  const { label, tone } = scoreLabel(score)
+  const label = tr.f.scoreLabel(score)
   return (
     <span
       className={cx(
         'inline-flex items-center gap-1.5 rounded-full font-semibold',
-        TONE_STYLES[tone],
+        TONE_STYLES[scoreTone(score)],
         size === 'sm' ? 'px-2.5 py-0.5 text-xs' : 'px-3 py-1 text-sm',
       )}
       title={label}
@@ -37,8 +39,17 @@ export function ScoreBadge({
 }
 
 /** Detail du score critere par critere — rend la formule lisible pour l'usager. */
-export function ScoreBreakdown({ breakdown }: { breakdown: MatchBreakdown }) {
-  const entries = Object.entries(breakdown) as [keyof MatchBreakdown, MatchBreakdown[keyof MatchBreakdown]][]
+export function ScoreBreakdown({
+  breakdown,
+  tr,
+}: {
+  breakdown: MatchBreakdown
+  tr: Translation
+}) {
+  const entries = Object.entries(breakdown) as [
+    keyof MatchBreakdown,
+    MatchBreakdown[keyof MatchBreakdown],
+  ][]
   if (entries.length === 0) return null
 
   return (
@@ -49,7 +60,7 @@ export function ScoreBreakdown({ breakdown }: { breakdown: MatchBreakdown }) {
         return (
           <li key={key} className="flex items-center gap-3">
             <span className="w-32 shrink-0 text-sm text-encre-700">
-              {CRITERION_LABELS[key] ?? key}
+              {tr.t.enums.criterion[key] ?? key}
             </span>
             <span className="h-2 flex-1 overflow-hidden rounded-full bg-sable-300">
               <span
@@ -60,8 +71,8 @@ export function ScoreBreakdown({ breakdown }: { breakdown: MatchBreakdown }) {
                 style={{ width: `${pct}%` }}
               />
             </span>
-            <span className="w-24 shrink-0 text-right text-xs font-medium text-encre-500">
-              {criterion.points} / {criterion.weight} pts
+            <span className="w-24 shrink-0 text-end text-xs font-medium text-encre-500">
+              {criterion.points} / {criterion.weight} {tr.t.score.points}
             </span>
           </li>
         )
