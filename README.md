@@ -61,18 +61,55 @@ cp .env.example .env.local
 # et SUPABASE_SERVICE_ROLE_KEY.
 ```
 
-### 3. Appliquer les migrations
+### 3. Créer les tables
 
-Avec la CLI Supabase :
+**Le plus simple — un seul fichier à coller.** Ouvrez *SQL Editor* dans le tableau de bord
+Supabase, collez le contenu de [`supabase/schema.sql`](supabase/schema.sql) et exécutez.
+
+```bash
+# ou en ligne de commande
+psql "$DATABASE_URL" -f supabase/schema.sql
+```
+
+**Ou, si vous utilisez la CLI Supabase** — à préférer dès que la base est en service, car
+seules les migrations manquantes sont appliquées :
 
 ```bash
 npx supabase link --project-ref <votre-ref>
 npx supabase db push
 ```
 
-Ou en collant les fichiers de `supabase/migrations/` **dans l'ordre alphabétique** dans
-l'éditeur SQL du tableau de bord. Ils créent le schéma, le moteur de matching, les règles RLS,
-les KPI, le référentiel géographique et les buckets de stockage.
+Les deux chemins produisent exactement la même base : `schema.sql` est la concaténation
+ordonnée de `supabase/migrations/`, régénérée par `npm run build:schema`. **La source de
+vérité reste `supabase/migrations/`** — c'est là que se font les corrections.
+
+Ce que l'installation crée :
+
+| | |
+| --- | ---: |
+| Tables | 17 |
+| Vues publiques | 3 |
+| Énumérations métier | 14 |
+| Fonctions (matching, KPI, garde-fous) | 80 |
+| Politiques Row Level Security | 44 |
+| Déclencheurs | 19 |
+| Buckets de stockage | 4 |
+| Régions / communes | 12 / 282 |
+
+Les 17 tables :
+
+```
+profiles ── owner_profiles          land_listings ── land_images
+         └─ participant_profiles                  └─ land_documents
+
+participant_requests                projects ── project_participants
+                                             └─ project_documents
+
+matches        favorites        notifications
+admin_actions  reports          regions          cities
+```
+
+Aucun compte ni aucune donnée de démonstration n'est créé à cette étape — voir le point 6.
 
 **Référentiel géographique** : les 12 régions administratives du Royaume et 282 communes
 urbaines, chaque région étant pourvue.
@@ -407,6 +444,7 @@ src/
     i18n/                      langues, dictionnaires FR/AR, helpers serveur
     …                          types, formatage, requêtes, clients Supabase
 supabase/
+  schema.sql                   installation en un seul fichier (généré)
   migrations/                  schéma, matching, RLS, KPI, référentiel, privilèges
   functions/notify/            Edge Function d'envoi des emails
   tests/                       stubs Supabase + suite de tests SQL

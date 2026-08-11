@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:db": "bash supabase/tests/run.sh"
+    "test:db": "bash supabase/tests/run.sh",
+    "build:schema": "node scripts/build-schema.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
