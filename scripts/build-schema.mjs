@@ -30,8 +30,9 @@ const header = `-- =============================================================
 -- Il ne crée AUCUN compte et AUCUNE donnée de démonstration : pour cela, voir
 -- \`supabase/seed.sql\` (à réserver à un environnement de test).
 --
--- Le fichier est rejouable sur une base vierge. Sur une base déjà installée,
--- préférez \`supabase db push\`, qui n'applique que les migrations manquantes.
+-- ⚠ Ce fichier s'adresse à une base VIERGE. Sur une base déjà installée, il
+--   s'arrête de lui-même avec un message : appliquez alors uniquement les
+--   migrations manquantes de \`supabase/migrations/\` (ou \`supabase db push\`).
 --
 -- ⚠ Ne modifiez pas ce fichier à la main : il est régénéré depuis les
 --   migrations par \`npm run build:schema\`. Toute correction se fait dans
@@ -39,6 +40,23 @@ const header = `-- =============================================================
 -- =============================================================================
 
 begin;
+
+-- --- Garde-fou ---------------------------------------------------------------
+-- Rejouer ce fichier sur une base déjà installée échouait sur un message peu
+-- parlant (« type "user_role" already exists ») après avoir déjà rejoué une
+-- partie du schéma. On s'arrête donc franchement, avec la marche à suivre.
+do $$
+begin
+  if exists (select 1 from pg_class where relname = 'land_listings' and relnamespace = 'public'::regnamespace) then
+    raise exception using
+      errcode = '42P07',
+      message = 'La base Ntcharkou est déjà installée.',
+      hint    = 'N''exécutez pas schema.sql, qui s''adresse à une base vierge. '
+                'Appliquez uniquement les migrations manquantes de supabase/migrations/ '
+                '(la plus récente d''abord), ou lancez « supabase db push ».';
+  end if;
+end;
+$$;
 
 `
 

@@ -13,6 +13,10 @@
 --
 --   3. Adhesions — les candidatures remontent a l'administration, qui les
 --      tranche ; le candidat est notifie de la decision.
+--
+-- La migration est rejouable : chaque objet est precede de son `drop ... if
+-- exists`, y compris sous son nouveau nom. La rejouer sur une base deja a jour
+-- ne produit que des NOTICE.
 
 -- -----------------------------------------------------------------------------
 -- 1. Prix et capacite d'une unite
@@ -62,16 +66,19 @@ alter table public.projects
 -- -----------------------------------------------------------------------------
 
 drop policy if exists "projet : creation d'un groupe" on public.projects;
+drop policy if exists "projet : creation reservee a l'administration" on public.projects;
 
 create policy "projet : creation reservee a l'administration" on public.projects
   for insert with check (public.is_admin());
 
 -- Le porteur ne peut plus modifier un projet : l'instruction est administrative.
 drop policy if exists "projet : mise a jour" on public.projects;
+drop policy if exists "projet : mise a jour par l'administration" on public.projects;
 create policy "projet : mise a jour par l'administration" on public.projects
   for update using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists "projet : suppression d'une proposition" on public.projects;
+drop policy if exists "projet : suppression par l'administration" on public.projects;
 create policy "projet : suppression par l'administration" on public.projects
   for delete using (public.is_admin());
 
