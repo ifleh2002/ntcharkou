@@ -39,7 +39,7 @@ export default async function NouvelleDemandePage({
 }) {
   const { locale: raw } = await params
   const locale = resolveLocale(raw)
-  const { t, f } = translation(locale)
+  const { t } = translation(locale)
 
   const query = await searchParams
   const session = await requireSession('/mes-demandes/nouvelle')
@@ -80,7 +80,7 @@ export default async function NouvelleDemandePage({
         profile={session.profile}
         participantProfile={participantProfile.data ?? null}
         t={t}
-        f={f}
+        locale={locale}
         defaults={
           land
             ? {

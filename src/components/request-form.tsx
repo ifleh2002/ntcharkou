@@ -3,8 +3,8 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { saveRequest } from '@/app/actions/requests'
-import type { Dictionary } from '@/lib/i18n'
-import type { Formatter } from '@/lib/format'
+import type { Dictionary, Locale } from '@/lib/i18n'
+import { createFormatter } from '@/lib/format'
 import { PROPERTY_NEED_GROUPS } from '@/lib/labels'
 import type {
   City,
@@ -25,14 +25,14 @@ export function RequestForm({
   participantProfile,
   defaults,
   t,
-  f,
+  locale,
 }: {
   regions: Region[]
   cities: City[]
   profile: Profile
   participantProfile: ParticipantProfile | null
   t: Dictionary
-  f: Formatter
+  locale: Locale
   defaults?: {
     region_code?: string | null
     city_id?: string | null
@@ -43,6 +43,11 @@ export function RequestForm({
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+
+  // `locale` plutôt qu'un objet de formatage : les props d'un composant client
+  // traversent la frontière serveur/client et doivent rester sérialisables.
+  // `createFormatter` est une fonction pure, on la rejoue donc ici.
+  const f = useMemo(() => createFormatter(locale, t), [locale, t])
 
   const [region, setRegion] = useState(defaults?.region_code ?? profile.region_code ?? '')
   const [sameBody, setSameBody] = useState<SameBodyPreference>('indifferent')

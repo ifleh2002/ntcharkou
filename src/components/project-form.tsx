@@ -3,8 +3,8 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { createProject } from '@/app/actions/projects'
-import type { Dictionary } from '@/lib/i18n'
-import type { Formatter } from '@/lib/format'
+import type { Dictionary, Locale } from '@/lib/i18n'
+import { createFormatter } from '@/lib/format'
 import { PROPERTY_NEED_ORDER, ZONING_ORDER } from '@/lib/labels'
 import type { City, ProfessionalBody, PropertyNeed, Region } from '@/lib/types'
 import { CityOptions } from './city-options'
@@ -15,12 +15,12 @@ export function ProjectForm({
   cities,
   defaults,
   t,
-  f,
+  locale,
 }: {
   regions: Region[]
   cities: City[]
   t: Dictionary
-  f: Formatter
+  locale: Locale
   defaults?: {
     land_id?: string
     region_code?: string
@@ -37,6 +37,11 @@ export function ProjectForm({
   const [region, setRegion] = useState(defaults?.region_code ?? '')
   const [units, setUnits] = useState(defaults?.units ? String(defaults.units) : '')
   const [budget, setBudget] = useState('')
+
+  // `locale` plutôt qu'un objet de formatage : les props d'un composant client
+  // traversent la frontière serveur/client et doivent rester sérialisables.
+  // `createFormatter` est une fonction pure, on la rejoue donc ici.
+  const f = useMemo(() => createFormatter(locale, t), [locale, t])
 
   const totalBudget = useMemo(() => {
     const u = Number(units)

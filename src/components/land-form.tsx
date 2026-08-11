@@ -4,8 +4,9 @@ import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { saveLand } from '@/app/actions/lands'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
-import type { Dictionary } from '@/lib/i18n'
-import type { Formatter } from '@/lib/format'
+import type { Dictionary, Locale } from '@/lib/i18n'
+import { localePath } from '@/lib/i18n/config'
+import { createFormatter } from '@/lib/format'
 import { ZONING_ORDER } from '@/lib/labels'
 import { LAND_DOCUMENTS_BUCKET, LAND_IMAGES_BUCKET } from '@/lib/storage'
 import type { City, LegalStatus, OwnerKind, Profile, Region } from '@/lib/types'
@@ -20,19 +21,20 @@ export function LandForm({
   profile,
   ownerKind,
   t,
-  f,
-  nextPath,
+  locale,
 }: {
   regions: Region[]
   cities: City[]
   profile: Profile
   ownerKind: OwnerKind
   t: Dictionary
-  f: Formatter
-  /** Construit l'URL de la fiche créée, préfixe de langue compris. */
-  nextPath: (landId: string) => string
+  locale: Locale
 }) {
   const STEPS = t.landForm.steps
+  // `locale` plutôt qu'un objet de formatage : les props d'un composant client
+  // traversent la frontière serveur/client et doivent rester sérialisables.
+  // `createFormatter` est une fonction pure, on la rejoue donc ici.
+  const f = useMemo(() => createFormatter(locale, t), [locale, t])
   const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -109,7 +111,7 @@ export function LandForm({
       setError(t.landForm.errUpload)
     }
 
-    router.push(nextPath(result.landId))
+    router.push(localePath(locale, `/mes-terrains/${result.landId}?cree=1`))
   }
 
   async function uploadFiles(form: HTMLFormElement, landId: string) {

@@ -57,7 +57,7 @@ export default async function NouveauProjetPage({
         regions={regions}
         cities={cities}
         t={t}
-        f={f}
+        locale={locale}
         defaults={
           land
             ? {

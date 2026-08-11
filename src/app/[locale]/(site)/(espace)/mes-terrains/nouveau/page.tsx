@@ -24,7 +24,7 @@ export default async function NouveauTerrainPage({
 }) {
   const { locale: raw } = await params
   const locale = resolveLocale(raw)
-  const { t, f, path } = translation(locale)
+  const { t } = translation(locale)
 
   const session = await requireSession('/mes-terrains/nouveau')
   const supabase = await createSupabaseServerClient()
@@ -58,8 +58,7 @@ export default async function NouveauTerrainPage({
         profile={session.profile}
         ownerKind={(ownerProfile.data?.owner_kind as OwnerKind) ?? 'particulier'}
         t={t}
-        f={f}
-        nextPath={(landId) => path(`/mes-terrains/${landId}?cree=1`)}
+        locale={locale}
       />
     </div>
   )
