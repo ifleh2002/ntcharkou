@@ -2,12 +2,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { expressInterest, toggleFavorite } from '@/app/actions/interactions'
+import { Gallery } from '@/components/gallery'
 import { Alert, Badge, Button, Card, LinkButton } from '@/components/ui'
 import { getSessionContext } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
 import { getLand, getLandImages } from '@/lib/queries'
-import { landImageUrl } from '@/lib/storage'
 import { createSupabaseServerClient, isSupabaseConfigured } from '@/lib/supabase/server'
 
 export async function generateMetadata({
@@ -98,33 +98,12 @@ export default async function TerrainDetailPage({
 
       <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
         <div>
-          <div className="surface overflow-hidden p-0">
-            <div className="aspect-16/9 bg-sable-200">
-              {images[0] ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={landImageUrl(images[0].storage_path) ?? ''}
-                  alt={land.title}
-                  className="size-full object-cover"
-                />
-              ) : (
-                <div className="motif-zellige grid size-full place-items-center text-6xl">🏞️</div>
-              )}
-            </div>
-            {images.length > 1 ? (
-              <div className="flex gap-2 overflow-x-auto p-3">
-                {images.slice(1, 7).map((image) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={image.id}
-                    src={landImageUrl(image.storage_path) ?? ''}
-                    alt={image.caption ?? land.title}
-                    className="size-20 shrink-0 rounded-lg object-cover"
-                  />
-                ))}
-              </div>
-            ) : null}
-          </div>
+          <Gallery
+            images={images}
+            title={land.title}
+            seed={land.id}
+            noPhotoLabel={t.lands.noPhoto}
+          />
 
           <header className="mt-6">
             <div className="flex flex-wrap items-center gap-2">
@@ -280,7 +259,7 @@ export default async function TerrainDetailPage({
             <p className="text-sm font-semibold text-encre-900">{t.lands.groupPrompt}</p>
             <p className="mt-1.5 text-sm text-encre-500">{t.lands.groupPromptBody}</p>
             <LinkButton
-              href={path(`/mes-projets/nouveau?terrain=${land.id}`)}
+              href={path('/projets')}
               variant="collectif"
               size="sm"
               className="mt-3 w-full"

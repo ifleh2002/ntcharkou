@@ -234,6 +234,15 @@ export interface ProjectPublic {
   units_planned: number
   participants_target: number
   budget_per_unit: number | null
+  /** Grille tarifaire fixée par l'administration après étude. */
+  unit_surface_m2: number | null
+  unit_price_per_m2: number | null
+  market_price_per_m2: number | null
+  unit_price: number | null
+  market_unit_price: number | null
+  /** Écart au prix du marché, calculé par la vue — jamais saisi. */
+  savings_amount: number | null
+  savings_percent: number | null
   restricted_to_body: ProfessionalBody | null
   status: ProjectStatus
   land_id: string | null

@@ -166,7 +166,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         ) : (
           <Card className="text-center text-sm text-encre-500">
             {t.home.projectsEmpty}{' '}
-            <Link href={path('/mes-projets/nouveau')} className="font-semibold text-zellige-600">
+            <Link href={path('/projets')} className="font-semibold text-zellige-600">
               {t.home.projectsEmptyCta}
             </Link>
             .
@@ -184,7 +184,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <h2 className="text-2xl font-bold">{t.home.groupTitle}</h2>
               <p className="mt-3 leading-relaxed text-zellige-50/90">{t.home.groupText}</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <LinkButton href={path('/mes-projets/nouveau')} variant="secondary" size="md">
+                <LinkButton href={path('/projets')} variant="secondary" size="md">
                   {t.home.groupCta}
                 </LinkButton>
                 <LinkButton

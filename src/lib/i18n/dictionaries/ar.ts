@@ -38,6 +38,7 @@ export const ar: Dictionary = {
   common: {
     search: 'بحث',
     filter: 'تصفية',
+    updating: 'جارٍ التحديث…',
     clear: 'مسح',
     save: 'حفظ',
     cancel: 'إلغاء',
@@ -184,6 +185,8 @@ export const ar: Dictionary = {
     privacyTitle: 'معطياتك الشخصية تبقى خاصة',
     privacyText:
       'الهاتف، البريد الإلكتروني، البطاقة الوطنية، الرسم العقاري، شهادة التعمير: لا تظهر أي من هذه المعلومات في الصفحات العمومية. لا يطّلع عليها سواك والإدارة، وهذا القيد مطبَّق مباشرة من طرف قاعدة البيانات.',
+    videoTitle: 'نتشاركو في فيديو',
+    videoCaption: 'مبدأ السكن التشاركي في بضع دقائق.',
   },
 
   about: {
@@ -376,6 +379,7 @@ export const ar: Dictionary = {
     views: 'زيارة',
     report: 'التبليغ عن هذا الإعلان',
     notFound: 'الأرض غير موجودة',
+    noPhoto: 'لم تُضف أي صورة لهذه الأرض بعد.',
   },
 
   myLands: {
@@ -622,6 +626,14 @@ export const ar: Dictionary = {
     identityNote:
       'هوية المشاركين الآخرين غير منشورة. لا تُشارَك إلا بعد اكتمال المجموعة والمصادقة على المشروع.',
     notFound: 'المشروع غير موجود',
+    unitsTaken: 'وحدة محجوزة',
+    perUnit: 'للوحدة',
+    marketPrice: 'ثمن السوق',
+    unitSurface: 'مساحة الوحدة',
+    participatoryPrice: 'الثمن التشاركي للوحدة',
+    marketPriceLabel: 'ثمن السوق للوحدة',
+    browse: 'تصفح المشاريع',
+    browseLands: 'الاطلاع على الأراضي المتاحة',
   },
 
   myProjects: {
@@ -647,6 +659,8 @@ export const ar: Dictionary = {
     underReview:
       'مجموعتك قيد الدراسة. ستفتحها الإدارة للترشيحات بعد المصادقة على الملف.',
     applicationOf: 'ترشيح بتاريخ',
+    adminManaged:
+      'تدير الإدارة سير المشروع: الفتح، وجدول الأثمنة، وطلبات الانخراط.',
   },
 
   projectForm: {
@@ -777,6 +791,50 @@ export const ar: Dictionary = {
       'يُحفظ اختيارك ويُطبَّق في كل زيارة. يمكنك أيضاً تغيير اللغة في أي وقت من أعلى الصفحة.',
   },
 
+  adminProjects: {
+    newTitle: 'مشروع تشاركي جديد',
+    newLead:
+      'ينشأ المشروع التشاركي من أرض صادقت عليها الإدارة. يُستمد الموقع والتخصيص العمراني والمساحة منها تلقائياً.',
+    stepLand: '١. الأرض الحاضنة',
+    stepProject: '٢. المشروع',
+    stepPricing: '٣. الوحدات والأثمنة',
+    land: 'أرض مصادق عليها',
+    choose: 'اختر أرضاً…',
+    alreadyLinked: 'يوجد مشروع بالفعل',
+    noLandTitle: 'لا توجد أرض مصادق عليها',
+    noLandBody:
+      'صادق أولاً على أرض من شاشة المصادقات: وحدها الأراضي المتحقق منها يمكن أن تصبح مشاريع تشاركية.',
+    projectTitle: 'عنوان المشروع',
+    titlePlaceholder: 'إقامة الأطباء — الدار البيضاء',
+    summary: 'ملخص',
+    description: 'الوصف',
+    restrictedTo: 'مخصص لفئة مهنية',
+    noRestriction: 'مفتوح للجميع',
+    units: 'عدد الوحدات',
+    unitSurface: 'مساحة الوحدة (م²)',
+    unitPricePerM2: 'الثمن التشاركي (درهم/م²)',
+    marketPricePerM2: 'ثمن السوق (درهم/م²)',
+    marketPriceHint: 'يُستعمل كمرجع للمقارنة في البطاقة العمومية.',
+    pricingHint:
+      'يُحدَّد عدد الوحدات وجدول الأثمنة بعد الدراسة، ويمكن مراجعتهما في أي وقت.',
+    preview: 'ما سيراه المشارك',
+    savingsPerUnit: 'التوفير في الوحدة',
+    openNow: 'الفتح فوراً أمام طلبات الانخراط',
+    create: 'إنشاء المشروع',
+    errUnits: 'يجب أن يكون عدد الوحدات عدداً صحيحاً موجباً.',
+    editPricing: 'تعديل الجدول',
+    noPricing: 'جدول الأثمنة غير محدد',
+    pricingSaved: 'تم حفظ الجدول.',
+    membershipTitle: 'طلبات الانخراط',
+    membershipLead: 'تُدرَس كل طلب هنا، ويُشعَر المشارك تلقائياً بالقرار.',
+    noPendingTitle: 'لا توجد طلبات في الانتظار',
+    noPendingBody: 'ستظهر طلبات الانخراط الجديدة في هذه الشاشة.',
+    unitsWanted: 'وحدة مطلوبة',
+    projectUnits: 'وحدة في المشروع',
+    accept: 'المصادقة على الانخراط',
+    reject: 'رفض',
+  },
+
   admin: {
     backOffice: 'لوحة الإدارة',
     publicSite: 'الموقع العمومي',
@@ -787,6 +845,7 @@ export const ar: Dictionary = {
     navLands: 'الأراضي',
     navRequests: 'الطلبات',
     navProjects: 'المشاريع التشاركية',
+    navMemberships: 'طلبات الانخراط',
     navMatching: 'المطابقة',
     navUsers: 'المستعملون',
     navStats: 'الإحصائيات / المؤشرات',

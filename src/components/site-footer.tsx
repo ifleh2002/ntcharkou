@@ -18,7 +18,7 @@ export async function SiteFooter() {
       links: [
         { href: '/mes-terrains/nouveau', label: t.footer.proposeLand },
         { href: '/mes-demandes/nouvelle', label: t.footer.postRequest },
-        { href: '/mes-projets/nouveau', label: t.footer.createGroup },
+        { href: '/projets', label: t.footer.createGroup },
       ],
     },
     {

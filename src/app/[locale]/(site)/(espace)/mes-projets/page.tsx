@@ -57,8 +57,8 @@ export default async function MesProjetsPage({
         title={t.myProjects.title}
         subtitle={t.myProjects.lead}
         action={
-          <LinkButton href={path('/mes-projets/nouveau')} variant="collectif">
-            {t.projects.createGroup}
+          <LinkButton href={path('/projets')} variant="collectif">
+            {t.projects.browse}
           </LinkButton>
         }
       />
@@ -73,8 +73,8 @@ export default async function MesProjetsPage({
               <LinkButton href={path('/projets')} variant="secondary" size="sm">
                 {t.myProjects.browse}
               </LinkButton>
-              <LinkButton href={path('/mes-projets/nouveau')} variant="collectif" size="sm">
-                {t.projects.createGroup}
+              <LinkButton href={path('/projets')} variant="collectif" size="sm">
+                {t.projects.browse}
               </LinkButton>
             </div>
           }

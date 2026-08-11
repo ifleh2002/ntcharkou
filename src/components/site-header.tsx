@@ -57,44 +57,53 @@ export async function SiteHeader() {
         <div className="ms-auto flex items-center gap-2">
           <LanguageSwitcher locale={locale} label={t.meta.switchLabel} />
 
+          {/* La cloche reste toujours visible : c'est le seul point d'entree
+              vers une information qui vient d'arriver. */}
           {session ? (
-            <>
-              <Link
-                href={path('/notifications')}
-                className="relative rounded-lg px-2.5 py-2 text-lg transition-colors hover:bg-sable-200"
-                aria-label={
-                  unread > 0
-                    ? `${t.nav.notifications} (${unread} ${t.nav.unreadNotifications})`
-                    : t.nav.notifications
-                }
-              >
-                🔔
-                {unread > 0 ? (
-                  <span className="absolute top-0.5 end-0.5 grid min-w-4 place-items-center rounded-full bg-argile-500 px-1 text-[10px] font-bold text-white">
-                    {unread > 9 ? '9+' : unread}
-                  </span>
-                ) : null}
-              </Link>
-              {session.profile.role === 'admin' ? (
-                <LinkButton href={path('/admin')} variant="ghost" size="sm">
-                  🛡️ {t.nav.backOffice}
-                </LinkButton>
+            <Link
+              href={path('/notifications')}
+              className="relative rounded-lg px-2.5 py-2 text-lg transition-colors hover:bg-sable-200"
+              aria-label={
+                unread > 0
+                  ? `${t.nav.notifications} (${unread} ${t.nav.unreadNotifications})`
+                  : t.nav.notifications
+              }
+            >
+              🔔
+              {unread > 0 ? (
+                <span className="absolute top-0.5 end-0.5 grid min-w-4 place-items-center rounded-full bg-argile-500 px-1 text-[10px] font-bold text-white">
+                  {unread > 9 ? '9+' : unread}
+                </span>
               ) : null}
-              <LinkButton href={path('/tableau-de-bord')} variant="secondary" size="sm">
-                {t.nav.mySpace}
-              </LinkButton>
-              <LogoutButton label={t.nav.logout} />
-            </>
-          ) : (
-            <>
-              <LinkButton href={path('/connexion')} variant="ghost" size="sm">
-                {t.nav.login}
-              </LinkButton>
-              <LinkButton href={path('/inscription')} size="sm">
-                {t.nav.signup}
-              </LinkButton>
-            </>
-          )}
+            </Link>
+          ) : null}
+
+          {/* En dessous de 640 px, ces boutons ne tiennent pas sur la ligne :
+              ils rejoignent le menu repliable plus bas. */}
+          <div className="hidden items-center gap-2 sm:flex">
+            {session ? (
+              <>
+                {session.profile.role === 'admin' ? (
+                  <LinkButton href={path('/admin')} variant="ghost" size="sm">
+                    🛡️ {t.nav.backOffice}
+                  </LinkButton>
+                ) : null}
+                <LinkButton href={path('/tableau-de-bord')} variant="secondary" size="sm">
+                  {t.nav.mySpace}
+                </LinkButton>
+                <LogoutButton label={t.nav.logout} />
+              </>
+            ) : (
+              <>
+                <LinkButton href={path('/connexion')} variant="ghost" size="sm">
+                  {t.nav.login}
+                </LinkButton>
+                <LinkButton href={path('/inscription')} size="sm">
+                  {t.nav.signup}
+                </LinkButton>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -113,6 +122,32 @@ export async function SiteHeader() {
               {link.label}
             </Link>
           ))}
+
+          {/* Reprise des acces au compte, masques dans la barre sous 640 px. */}
+          <span className="mt-2 flex flex-wrap gap-2 border-t border-sable-200 pt-3 sm:hidden">
+            {session ? (
+              <>
+                {session.profile.role === 'admin' ? (
+                  <LinkButton href={path('/admin')} variant="ghost" size="sm">
+                    🛡️ {t.nav.backOffice}
+                  </LinkButton>
+                ) : null}
+                <LinkButton href={path('/tableau-de-bord')} variant="secondary" size="sm">
+                  {t.nav.mySpace}
+                </LinkButton>
+                <LogoutButton label={t.nav.logout} />
+              </>
+            ) : (
+              <>
+                <LinkButton href={path('/connexion')} variant="ghost" size="sm">
+                  {t.nav.login}
+                </LinkButton>
+                <LinkButton href={path('/inscription')} size="sm">
+                  {t.nav.signup}
+                </LinkButton>
+              </>
+            )}
+          </span>
         </nav>
       </details>
     </header>

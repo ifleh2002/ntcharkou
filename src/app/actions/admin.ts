@@ -81,3 +81,100 @@ export async function resolveReport(formData: FormData) {
   await supabase.rpc('admin_resolve_report', { p_report: reportId })
   revalidatePath(path('/admin/signalements'))
 }
+
+/**
+ * Transforme un terrain validé en projet participatif.
+ *
+ * C'est le seul chemin de création : la RLS refuse désormais tout `insert`
+ * direct sur `projects` à qui n'est pas administrateur, et la fonction SQL
+ * revérifie le rôle de son côté.
+ */
+export async function createProjectFromLand(formData: FormData): Promise<{ error?: string }> {
+  const { supabase, path } = await adminClient()
+  const { t } = await getActionTranslation()
+
+  const number = (key: string) => {
+    const raw = (formData.get(key) as string | null)?.trim()
+    if (!raw) return null
+    const value = Number(raw)
+    return Number.isFinite(value) ? value : null
+  }
+
+  const units = number('units_planned')
+  if (!units || units <= 0) return { error: t.adminProjects.errUnits }
+
+  const { data, error } = await supabase.rpc('admin_create_project_from_land', {
+    p_land: formData.get('land_id') as string,
+    p_title: (formData.get('title') as string)?.trim(),
+    p_units_planned: units,
+    p_property_need: formData.get('property_need') as string,
+    p_summary: ((formData.get('summary') as string) || '').trim() || null,
+    p_description: ((formData.get('description') as string) || '').trim() || null,
+    p_unit_surface_m2: number('unit_surface_m2'),
+    p_unit_price_per_m2: number('unit_price_per_m2'),
+    p_market_price_per_m2: number('market_price_per_m2'),
+    p_restricted_to_body: ((formData.get('restricted_to_body') as string) || '') || null,
+    p_open: formData.get('open') === '1',
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(path('/admin/projets'))
+  revalidatePath(path('/projets'))
+  return { error: undefined, ...(typeof data === 'string' ? { projectId: data } : {}) }
+}
+
+/** Grille tarifaire fixée « après étude » : unités, surface et prix au m². */
+export async function setProjectPricing(formData: FormData): Promise<{ error?: string }> {
+  const { supabase, path } = await adminClient()
+  const { t } = await getActionTranslation()
+
+  const number = (key: string) => {
+    const raw = (formData.get(key) as string | null)?.trim()
+    if (!raw) return null
+    const value = Number(raw)
+    return Number.isFinite(value) ? value : null
+  }
+
+  const units = number('units_planned')
+  if (!units || units <= 0) return { error: t.adminProjects.errUnits }
+
+  const projectId = formData.get('project_id') as string
+  const { error } = await supabase.rpc('admin_set_project_pricing', {
+    p_project: projectId,
+    p_units_planned: units,
+    p_unit_surface_m2: number('unit_surface_m2'),
+    p_unit_price_per_m2: number('unit_price_per_m2'),
+    p_market_price_per_m2: number('market_price_per_m2'),
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(path('/admin/projets'))
+  revalidatePath(path('/projets'))
+  revalidatePath(path(`/projets/${projectId}`))
+  return {}
+}
+
+/**
+ * Décision administrative sur une demande d'adhésion.
+ * La notification du candidat part du déclencheur SQL, dans la même
+ * transaction : une adhésion ne peut pas être validée sans que l'intéressé en
+ * soit averti.
+ */
+export async function decideParticipation(formData: FormData) {
+  const participationId = formData.get('participation_id') as string
+  const accept = formData.get('accept') === '1'
+  const reason = ((formData.get('reason') as string) || '').trim() || null
+
+  const { supabase, path } = await adminClient()
+  await supabase.rpc('admin_decide_participation', {
+    p_participation: participationId,
+    p_accept: accept,
+    p_reason: reason,
+  })
+
+  revalidatePath(path('/admin/projets'))
+  revalidatePath(path('/admin/adhesions'))
+  revalidatePath(path('/projets'))
+}

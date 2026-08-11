@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Translation } from '@/lib/i18n/server'
 import { landImageUrl } from '@/lib/storage'
 import type { LandListingPublic } from '@/lib/types'
+import { Cover } from './cover'
 import { ScoreBadge } from './score'
 import { Badge } from './ui'
 
@@ -26,17 +27,12 @@ export function LandCard({
       className="surface group flex flex-col overflow-hidden p-0 transition-shadow hover:shadow-md"
     >
       <div className="relative aspect-16/10 overflow-hidden bg-sable-200">
-        {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={cover}
-            alt={land.title}
-            className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-            loading="lazy"
-          />
-        ) : (
-          <div className="motif-zellige flex size-full items-center justify-center text-4xl">🏞️</div>
-        )}
+        <Cover
+          src={cover}
+          alt={land.title}
+          seed={land.id}
+          className="transition-transform duration-300 group-hover:scale-[1.03]"
+        />
         <div className="absolute top-3 start-3 flex flex-wrap gap-1.5">
           <Badge tone="argile">{t.enums.zoning[land.zoning]}</Badge>
           {land.price_negotiable ? <Badge tone="safran">{t.lands.negotiable}</Badge> : null}

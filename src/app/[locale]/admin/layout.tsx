@@ -13,12 +13,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await requireAdmin()
   const supabase = await createSupabaseServerClient()
 
-  const [pending, reports] = await Promise.all([
+  const [pending, reports, memberships] = await Promise.all([
     supabase
       .from('land_listings')
       .select('id', { count: 'exact', head: true })
       .in('status', ['soumis', 'en_verification']),
     supabase.from('reports').select('id', { count: 'exact', head: true }).is('resolved_at', null),
+    supabase
+      .from('project_participants')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'candidature'),
   ])
 
   /** Back-office totalement séparé de l'espace public (section 2). */
@@ -33,6 +37,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { href: '/admin/terrains', label: t.admin.navLands, icon: '🏞️', badge: 0 },
     { href: '/admin/demandes', label: t.admin.navRequests, icon: '📋', badge: 0 },
     { href: '/admin/projets', label: t.admin.navProjects, icon: '🏗️', badge: 0 },
+    {
+      href: '/admin/adhesions',
+      label: t.admin.navMemberships,
+      icon: '🤝',
+      badge: memberships.count ?? 0,
+    },
     { href: '/admin/matching', label: t.admin.navMatching, icon: '🎯', badge: 0 },
     { href: '/admin/utilisateurs', label: t.admin.navUsers, icon: '👥', badge: 0 },
     { href: '/admin/statistiques', label: t.admin.navStats, icon: '📈', badge: 0 },

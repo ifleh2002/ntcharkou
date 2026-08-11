@@ -257,32 +257,31 @@ export interface PublicStats {
   units: number
 }
 
+/**
+ * Chiffres de la page d'accueil.
+ *
+ * « Régions couvertes » compte les régions où un projet participatif existe
+ * réellement, pas les 12 régions du référentiel : annoncer 12 quand aucun
+ * projet n'est ouvert ailleurs serait trompeur. Le calcul vit dans la fonction
+ * `public_stats()`, donc une seule requête et une seule définition.
+ */
 export async function getPublicStats(): Promise<PublicStats> {
   return safe(
     async () => {
       const supabase = await createSupabaseServerClient()
-      const [lands, projects, regions] = await Promise.all([
-        supabase
-          .from('land_listings_public')
-          .select('estimated_units', { count: 'exact' })
-          .eq('status', 'publie'),
-        supabase
-          .from('projects_public')
-          .select('id', { count: 'exact', head: true })
-          .in('status', ['ouvert', 'groupe_constitue', 'en_preparation', 'realise']),
-        supabase.from('regions').select('code', { count: 'exact', head: true }),
-      ])
-
-      const units = (lands.data ?? []).reduce(
-        (sum, row) => sum + ((row as { estimated_units: number | null }).estimated_units ?? 0),
-        0,
-      )
+      const { data } = await supabase.rpc('public_stats')
+      const row = ((data ?? []) as {
+        lands: number
+        projects: number
+        regions_covered: number
+        units: number
+      }[])[0]
 
       return {
-        lands: lands.count ?? 0,
-        projects: projects.count ?? 0,
-        regions: regions.count ?? 0,
-        units,
+        lands: Number(row?.lands ?? 0),
+        projects: Number(row?.projects ?? 0),
+        regions: Number(row?.regions_covered ?? 0),
+        units: Number(row?.units ?? 0),
       }
     },
     { lands: 0, projects: 0, regions: 0, units: 0 },

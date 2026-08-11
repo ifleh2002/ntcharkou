@@ -33,6 +33,7 @@ export const fr = {
   common: {
     search: 'Rechercher',
     filter: 'Filtrer',
+    updating: 'Mise à jour…',
     clear: 'Effacer',
     save: 'Enregistrer',
     cancel: 'Annuler',
@@ -180,6 +181,8 @@ export const fr = {
     privacyTitle: 'Vos données personnelles restent privées',
     privacyText:
       'Téléphone, email, CIN, titre foncier, note de renseignement urbanistique : aucune de ces informations n’apparaît sur les pages publiques. Elles ne sont accessibles qu’à vous et à l’administration, et cette restriction est appliquée directement par la base de données.',
+    videoTitle: 'Ntcharkou en vidéo',
+    videoCaption: 'Le principe du logement participatif en quelques minutes.',
   },
 
   about: {
@@ -375,6 +378,7 @@ export const fr = {
     views: 'consultations',
     report: 'Signaler cette annonce',
     notFound: 'Terrain introuvable',
+    noPhoto: 'Aucune photo n’a encore été déposée pour ce terrain.',
   },
 
   myLands: {
@@ -631,6 +635,14 @@ export const fr = {
     identityNote:
       'L’identité des autres participants n’est pas publiée. Elle n’est partagée qu’une fois le groupe constitué et le projet validé.',
     notFound: 'Projet introuvable',
+    unitsTaken: 'unités réservées',
+    perUnit: 'par unité',
+    marketPrice: 'prix du marché',
+    unitSurface: 'Surface par unité',
+    participatoryPrice: 'Prix participatif par unité',
+    marketPriceLabel: 'Prix du marché par unité',
+    browse: 'Parcourir les projets',
+    browseLands: 'Voir les terrains disponibles',
   },
 
   myProjects: {
@@ -656,6 +668,8 @@ export const fr = {
     underReview:
       'Votre groupe est en cours d’analyse. L’administration l’ouvrira aux candidatures une fois le dossier validé.',
     applicationOf: 'candidature du',
+    adminManaged:
+      'Le déroulement du projet est piloté par l’administration : ouverture, grille tarifaire et adhésions.',
   },
 
   projectForm: {
@@ -790,6 +804,51 @@ export const fr = {
       'Votre choix est mémorisé et appliqué à chaque visite. Vous pouvez également changer de langue à tout moment depuis l’en-tête.',
   },
 
+  adminProjects: {
+    newTitle: 'Nouveau projet participatif',
+    newLead:
+      'Un projet participatif naît d’un terrain déjà validé par l’administration. La localisation, le zonage et la surface en sont repris automatiquement.',
+    stepLand: '1. Terrain d’assise',
+    stepProject: '2. Le projet',
+    stepPricing: '3. Unités et prix',
+    land: 'Terrain validé',
+    choose: 'Choisir un terrain…',
+    alreadyLinked: 'un projet existe déjà',
+    noLandTitle: 'Aucun terrain validé',
+    noLandBody:
+      'Validez d’abord un terrain depuis l’écran des validations : seuls les terrains vérifiés peuvent devenir des projets participatifs.',
+    projectTitle: 'Intitulé du projet',
+    titlePlaceholder: 'Résidence des Médecins — Casablanca',
+    summary: 'Résumé',
+    description: 'Description',
+    restrictedTo: 'Réservé à un corps professionnel',
+    noRestriction: 'Ouvert à tous',
+    units: 'Nombre d’unités',
+    unitSurface: 'Surface d’une unité (m²)',
+    unitPricePerM2: 'Prix participatif (DH/m²)',
+    marketPricePerM2: 'Prix du marché (DH/m²)',
+    marketPriceHint: 'Sert de référence comparative sur la fiche publique.',
+    pricingHint:
+      'Le nombre d’unités et la grille tarifaire sont fixés après étude. Ils peuvent être révisés à tout moment.',
+    preview: 'Ce que verra le participant',
+    savingsPerUnit: 'Économie par unité',
+    openNow: 'Ouvrir immédiatement aux demandes d’adhésion',
+    create: 'Créer le projet',
+    errUnits: 'Le nombre d’unités doit être un entier positif.',
+    editPricing: 'Modifier la grille',
+    noPricing: 'Grille tarifaire non renseignée',
+    pricingSaved: 'Grille enregistrée.',
+    membershipTitle: 'Demandes d’adhésion',
+    membershipLead:
+      'Chaque demande est instruite ici. Le participant est notifié automatiquement de la décision.',
+    noPendingTitle: 'Aucune demande en attente',
+    noPendingBody: 'Les nouvelles demandes d’adhésion apparaîtront sur cet écran.',
+    unitsWanted: 'unité(s) souhaitée(s)',
+    projectUnits: 'unités au projet',
+    accept: 'Valider l’adhésion',
+    reject: 'Refuser',
+  },
+
   admin: {
     backOffice: 'Back-office',
     publicSite: 'Site public',
@@ -800,6 +859,7 @@ export const fr = {
     navLands: 'Terrains',
     navRequests: 'Demandes',
     navProjects: 'Projets participatifs',
+    navMemberships: 'Demandes d’adhésion',
     navMatching: 'Matching',
     navUsers: 'Utilisateurs',
     navStats: 'Statistiques / KPI',

@@ -87,7 +87,7 @@ export default async function TableauDeBordPage({
   const shortcuts = [
     { href: '/mes-terrains/nouveau', icon: '🏞️', title: t.dashboard.shortcutLand },
     { href: '/mes-demandes/nouvelle', icon: '📋', title: t.dashboard.shortcutRequest },
-    { href: '/mes-projets/nouveau', icon: '👥', title: t.dashboard.shortcutGroup },
+    { href: '/projets', icon: '👥', title: t.dashboard.shortcutGroup },
   ]
 
   return (

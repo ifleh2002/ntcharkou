@@ -2,7 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { joinProject, leaveProject, toggleFavorite } from '@/app/actions/interactions'
+import { Cover } from '@/components/cover'
+import { PriceComparison } from '@/components/project-card'
 import { Alert, Badge, Button, Card, LinkButton, ProgressBar } from '@/components/ui'
+import { projectImageUrl } from '@/lib/storage'
 import { getSessionContext } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
@@ -32,7 +35,8 @@ export default async function ProjetDetailPage({
 }) {
   const { locale: raw, id } = await params
   const locale = resolveLocale(raw)
-  const { t, f, path } = translation(locale)
+  const tr = translation(locale)
+  const { t, f, path } = tr
   const query = await searchParams
 
   const project = await getProject(id, locale)
@@ -52,7 +56,7 @@ export default async function ProjetDetailPage({
     participation = (data as { id: string; status: ParticipationStatus } | null) ?? null
   }
 
-  const remaining = Math.max(0, project.participants_target - project.participants_confirmed)
+  const remaining = Math.max(0, project.units_planned - project.participants_confirmed)
   const currentStep = PROJECT_WORKFLOW.indexOf(project.status)
 
   return (
@@ -98,7 +102,17 @@ export default async function ProjetDetailPage({
             ) : null}
           </div>
 
-          <h1 className="mt-3 text-3xl font-bold text-encre-900">🏢 {project.title}</h1>
+          <div className="mt-3 aspect-16/9 overflow-hidden rounded-xl bg-sable-200">
+            <Cover
+              src={projectImageUrl(project.cover_image_path)}
+              alt={project.title}
+              seed={project.id}
+              icon="🏢"
+              eager
+            />
+          </div>
+
+          <h1 className="mt-5 text-3xl font-bold text-encre-900">{project.title}</h1>
           <p className="mt-2 text-encre-500">
             📍 {[project.district, project.city_name, project.region_name].filter(Boolean).join(' — ')}
           </p>
@@ -141,10 +155,17 @@ export default async function ProjetDetailPage({
                     value: project.zoning ? t.enums.zoning[project.zoning] : '—',
                   },
                   { label: t.projects.plannedUnits, value: project.units_planned },
-                  { label: t.projects.targetParticipants, value: project.participants_target },
                   {
-                    label: t.projects.budgetPerUnit,
-                    value: project.budget_per_unit ? f.dh(project.budget_per_unit) : '—',
+                    label: t.projects.unitSurface,
+                    value: project.unit_surface_m2 ? f.surface(project.unit_surface_m2) : '—',
+                  },
+                  {
+                    label: t.projects.participatoryPrice,
+                    value: project.unit_price ? f.dh(project.unit_price) : '—',
+                  },
+                  {
+                    label: t.projects.marketPriceLabel,
+                    value: project.market_unit_price ? f.dh(project.market_unit_price) : '—',
                   },
                   { label: t.projects.openedOn, value: f.date(project.opened_at) },
                 ].map((row) => (
@@ -190,13 +211,20 @@ export default async function ProjetDetailPage({
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="mb-4">
+            <PriceComparison project={project} tr={tr} size="lg" />
+          </div>
+
           <Card>
             <h2 className="font-semibold text-encre-900">{t.projects.groupTitle}</h2>
             <div className="mt-3">
-              <ProgressBar
-                value={project.participants_confirmed}
-                max={project.participants_target}
-              />
+              <ProgressBar value={project.participants_confirmed} max={project.units_planned} />
+              <p className="mt-2 text-sm">
+                <span className="font-bold text-encre-900">
+                  {project.participants_confirmed} / {project.units_planned}
+                </span>{' '}
+                <span className="text-encre-500">{t.projects.unitsTaken}</span>
+              </p>
             </div>
             <p className="mt-3 text-sm text-encre-500">
               {remaining > 0

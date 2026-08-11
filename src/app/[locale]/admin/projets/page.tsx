@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { reviewProject } from '@/app/actions/admin'
-import { Badge, Button, Card, ProgressBar } from '@/components/ui'
+import { AdminPricingForm } from '@/components/admin-pricing-form'
+import { Badge, Button, Card, LinkButton, ProgressBar } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
@@ -53,11 +54,17 @@ export default async function AdminProjetsPage({
 
   return (
     <div>
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-encre-900">{t.admin.projectsTitle}</h1>
-        <p className="mt-1 text-sm text-encre-500">
-          {projects.length} {t.admin.projectsCount}
-        </p>
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-encre-900">{t.admin.projectsTitle}</h1>
+          <p className="mt-1 text-sm text-encre-500">
+            {projects.length} {t.admin.projectsCount}
+          </p>
+        </div>
+        {/* Unique porte d'entrée : un projet naît d'un terrain déjà validé. */}
+        <LinkButton href={path('/admin/projets/nouveau')} variant="collectif" size="sm">
+          {t.adminProjects.newTitle}
+        </LinkButton>
       </header>
 
       <div className="space-y-4">
@@ -91,9 +98,15 @@ export default async function AdminProjetsPage({
                 <div className="mt-3 max-w-xs">
                   <ProgressBar
                     value={project.participants_confirmed}
-                    max={project.participants_target}
+                    max={project.units_planned}
                   />
+                  <p className="mt-1 text-xs text-encre-500">
+                    {project.participants_confirmed} / {project.units_planned}{' '}
+                    {t.projects.unitsTaken}
+                  </p>
                 </div>
+
+                <AdminPricingForm project={project} t={t} locale={locale} />
                 {project.participants_pending > 0 ? (
                   <p className="mt-1 text-xs text-encre-400">
                     {project.participants_pending} {t.admin.pendingCount}

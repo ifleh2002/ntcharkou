@@ -32,7 +32,7 @@ Les six modules du MVP :
 | **2. Terrains** | Formulaire en 6 étapes, photos, documents privés, workflow de validation | `src/components/land-form.tsx`, `src/app/[locale]/(site)/(espace)/mes-terrains` |
 | **3. Demandes participants** | Typologies multiples, budget total *et* par unité, unités, groupe professionnel | `src/components/request-form.tsx`, `src/app/[locale]/(site)/(espace)/mes-demandes` |
 | **4. Matching automatique** | Score pondéré à 7 critères, dans les deux sens, notifications | `supabase/migrations/*_matching.sql` |
-| **5. Projets participatifs** | Création de groupe, candidatures, constitution automatique, workflow | `src/app/[locale]/(site)/projets`, `mes-projets` |
+| **5. Projets participatifs** | Création **par l'administration** depuis un terrain validé, grille tarifaire, demandes d'adhésion, constitution automatique | `src/app/[locale]/admin/projets`, `admin/adhesions`, `(site)/projets` |
 | **6. Administration + KPI** | Back-office séparé, validations, KPI, graphiques, signalements | `src/app/[locale]/admin` |
 
 Le reste de l'espace public (accueil, recherche filtrée, fiche terrain, fiche projet,
@@ -472,3 +472,57 @@ Par ordre de valeur, une fois le MVP en service :
 8. **Contenus saisis par les utilisateurs** (titres d'annonces, descriptions) : ils restent
    dans la langue de saisie. Un affichage bilingue demanderait soit une double saisie, soit
    une traduction automatique — c'est un choix produit, pas une limite technique.
+
+## Le projet participatif est un acte administratif
+
+Un projet ne naît pas d'une initiative individuelle : **seule l'administration transforme un
+terrain validé en projet participatif**. La règle est posée à trois niveaux, de sorte qu'aucun
+chemin détourné ne subsiste :
+
+- la politique RLS d'insertion sur `projects` exige `is_admin()` ;
+- `admin_create_project_from_land()` revérifie le rôle et refuse un terrain qui n'est pas
+  `valide` ou `publie` ;
+- l'interface de création vit dans le back-office (`/admin/projets/nouveau`) et ne propose que
+  les terrains éligibles.
+
+La localisation, le zonage et la surface sont repris du terrain : rien n'est re-saisi, donc rien
+ne peut diverger.
+
+### Prix participatif et prix du marché
+
+L'administration saisit, « après étude », le nombre d'unités et deux grilles au m² : le prix
+participatif et le prix du marché du secteur. Le prix d'une unité et l'économie réalisée sont des
+**colonnes générées** (`unit_price`, `market_unit_price`) et des expressions de vue
+(`savings_amount`, `savings_percent`) : le comparatif affiché au participant ne peut pas diverger
+de la grille saisie, puisqu'il n'est jamais stocké séparément.
+
+L'avancement d'un projet se lit sur le nombre total d'unités — « 14 / 20 unités réservées » — et
+non sur une cible d'adhérents distincte.
+
+### Demandes d'adhésion
+
+Une candidature notifie **tous les administrateurs actifs**, et non le seul créateur. La décision
+passe par `admin_decide_participation()`, qui écrit le statut et déclenche la notification du
+candidat *dans la même transaction* : une adhésion ne peut pas être validée sans que l'intéressé
+en soit averti.
+
+### Régions couvertes
+
+Le chiffre affiché en page d'accueil compte les régions **où un projet existe réellement**
+(`public_stats()`), pas les 12 régions du référentiel.
+
+## Visuels
+
+`Cover` affiche la photo déposée ; si le fichier est introuvable, il bascule sur une couverture
+générée plutôt que de laisser une icône cassée. Sans photo, la couverture générée — un motif
+zellige en SVG dérivé de l'identifiant — prend le relais : deux annonces n'ont jamais le même
+visuel, et la même annonce garde le sien d'une page à l'autre. Aucune dépendance externe.
+
+`publicStorageUrl` accepte une URL absolue telle quelle, et encode les chemins segment par
+segment (`encodeURI` laissait passer `#` et `?`, qui tronquaient l'URL).
+
+## Filtres
+
+Les filtres s'appliquent à la frappe, sans bouton « Filtrer » : liste déroulante et case à cocher
+immédiatement, champs texte après une pause de saisie. Les formulaires restent des
+`<form method="get">`, donc l'URL demeure partageable et la recherche fonctionne sans JavaScript.

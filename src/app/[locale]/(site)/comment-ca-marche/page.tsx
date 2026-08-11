@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Card, LinkButton, SectionTitle } from '@/components/ui'
+import { VideoEmbed } from '@/components/video'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
 import { CRITERION_WEIGHTS } from '@/lib/labels'
@@ -35,6 +36,13 @@ export default async function CommentCaMarchePage({
         <h1 className="text-3xl font-bold text-encre-900">{t.howItWorks.title}</h1>
         <p className="mt-3 leading-relaxed text-encre-500">{t.howItWorks.lead}</p>
       </header>
+
+      <section className="mt-10">
+        <VideoEmbed id="p3JBU7A8Tzo" title={t.howItWorks.videoTitle} className="mx-auto max-w-3xl" />
+        <p className="mx-auto mt-3 max-w-3xl text-center text-sm text-encre-400">
+          {t.howItWorks.videoCaption}
+        </p>
+      </section>
 
       <section className="mt-12 grid gap-6 lg:grid-cols-2">
         <Card>

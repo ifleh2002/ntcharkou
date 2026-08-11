@@ -342,6 +342,7 @@ insert into public.projects (
   id, created_by, land_id, title, summary, description,
   region_code, city_id, district, property_need, zoning,
   units_planned, participants_target, budget_per_unit,
+  unit_surface_m2, unit_price_per_m2, market_price_per_m2,
   restricted_to_body, status
 ) values
 
@@ -354,6 +355,7 @@ insert into public.projects (
    'Projet pilote porté par un collectif de médecins exerçant à Casablanca. Le terrain de 1 500 m² est validé et le dossier de permis est à l''étude. Les appartements font de 90 à 120 m², avec parking en sous-sol et espaces communs.',
    'casablanca-settat', (select id from public.cities where name_fr = 'Casablanca'),
    'Sidi Maârouf', 'appartement_immeuble', 'r4', 20, 20, 650000,
+   100, 6500, 9500,
    'medecin', 'proposition'),
 
   -- (2) Groupe constitué — la cible est atteinte
@@ -365,6 +367,7 @@ insert into public.projects (
    'Collectif d''enseignants du secondaire. Le groupe est complet ; le montage juridique de la coopérative est engagé.',
    'rabat-sale-kenitra', (select id from public.cities where name_fr = 'Rabat'),
    'Hay Riad', 'appartement_immeuble', 'r3', 12, 12, 850000,
+   100, 8500, 12000,
    'enseignant', 'proposition'),
 
   -- (3) Ouvert — lotissement de villas
@@ -376,6 +379,7 @@ insert into public.projects (
    'Projet pilote de lotissement porté par un groupe d''ingénieurs. Chaque lot fait environ 270 m², avec voirie, réseaux et espaces verts mutualisés.',
    'marrakech-safi', (select id from public.cities where name_fr = 'Marrakech'),
    'Route de l''Ourika', 'terrain_villa', 'lotissement', 18, 18, 780000,
+   270, 2900, 4200,
    'ingenieur', 'proposition'),
 
   -- (4) En préparation — permis obtenu
@@ -387,6 +391,7 @@ insert into public.projects (
    'Projet pilote ouvert à tous les corps professionnels. Groupe complet, permis de construire obtenu, démarrage du chantier prévu au prochain trimestre.',
    'tanger-tetouan-al-hoceima', (select id from public.cities where name_fr = 'Tanger'),
    'Malabata', 'appartement_immeuble', 'immeuble', 14, 14, 720000,
+   90, 8000, 11000,
    null, 'proposition'),
 
   -- (5) Ouvert — mini-fermes
@@ -398,6 +403,7 @@ insert into public.projects (
    'Projet pilote agricole : mise en commun d''un terrain irrigué de 12 000 m², divisé en dix parcelles avec forage et clôture mutualisés.',
    'souss-massa', (select id from public.cities where name_fr = 'Agadir'),
    'Drarga', 'mini_ferme', 'agricole', 10, 10, 1100000,
+   1200, 917, 1400,
    null, 'proposition'),
 
   -- (6) En analyse — pas encore ouvert aux candidatures
@@ -409,6 +415,7 @@ insert into public.projects (
    'Dossier en cours d''analyse par l''administration : vérification du titre foncier et de la note de renseignement urbanistique.',
    'fes-meknes', (select id from public.cities where name_fr = 'Fès'),
    'Route d''Imouzzer', 'appartement_immeuble', 'r3', 10, 10, 620000,
+   95, 6500, 9000,
    'pharmacien', 'proposition'),
 
   -- (7) Réalisé — sert de référence dans les statistiques
@@ -420,6 +427,7 @@ insert into public.projects (
    'Premier projet pilote mené à son terme : groupe constitué en quatre mois, permis obtenu, chantier livré. Il sert de référence pour les projets suivants.',
    'fes-meknes', (select id from public.cities where name_fr = 'Meknès'),
    'Marjane', 'appartement_r2', 'r2', 8, 8, 480000,
+   80, 6000, 8200,
    'enseignant', 'proposition')
 
 on conflict (id) do nothing;

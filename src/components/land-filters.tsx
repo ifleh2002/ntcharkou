@@ -5,7 +5,8 @@ import type { Dictionary } from '@/lib/i18n'
 import { ZONING_ORDER } from '@/lib/labels'
 import type { City, Region } from '@/lib/types'
 import { CityOptions } from './city-options'
-import { Button, Field } from './ui'
+import { FilterPending, useInstantFilters } from './instant-filters'
+import { Field } from './ui'
 
 export interface LandFilterValues {
   q?: string
@@ -22,7 +23,11 @@ export interface LandFilterValues {
 
 /**
  * Panneau de filtres de la recherche de terrains.
- * Formulaire GET : l'URL reste partageable et la page est rendue cote serveur.
+ *
+ * Les resultats se rafraichissent des la saisie : plus de bouton « Filtrer ».
+ * Le formulaire reste malgre tout un `<form method="get">`, donc l'URL demeure
+ * partageable, la page rendue cote serveur, et la recherche fonctionne meme
+ * sans JavaScript.
  */
 export function LandFilters({
   regions,
@@ -39,11 +44,22 @@ export function LandFilters({
 }) {
   const [region, setRegion] = useState(values.region ?? '')
   const [city, setCity] = useState(values.city ?? '')
+  const { formRef, onChange, onSubmit, pending } = useInstantFilters()
 
   const selectedZoning = new Set(values.zoning ?? [])
 
   return (
-    <form method="get" className="surface space-y-4 p-5">
+    <form
+      ref={formRef}
+      method="get"
+      onChange={onChange}
+      onSubmit={onSubmit}
+      className="surface space-y-4 p-5"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold text-encre-900">{t.common.filter}</p>
+        <FilterPending pending={pending} label={t.common.updating} />
+      </div>
       <Field label={t.lands.keyword} htmlFor="f-q">
         <input
           id="f-q"
@@ -175,13 +191,12 @@ export function LandFilters({
         </select>
       </Field>
 
-      <div className="flex gap-2 pt-1">
-        <Button type="submit" className="flex-1">
-          {t.common.filter}
-        </Button>
+      <div className="pt-1">
+        {/* Pas de bouton « Filtrer » : l'application est immediate. Le lien de
+            remise a zero reste un vrai lien, donc utilisable sans JavaScript. */}
         <a
           href={resetHref}
-          className="inline-flex items-center justify-center rounded-lg border border-sable-400 bg-white px-4 py-2.5 text-sm font-semibold text-encre-900 hover:bg-sable-100"
+          className="inline-flex w-full items-center justify-center rounded-lg border border-sable-400 bg-white px-4 py-2.5 text-sm font-semibold text-encre-900 hover:bg-sable-100"
         >
           {t.common.clear}
         </a>

@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { decideParticipation } from '@/app/actions/interactions'
-import { cancelProject, submitProject } from '@/app/actions/projects'
 import { Alert, Badge, Button, Card, LinkButton, ProgressBar } from '@/components/ui'
 import { requireSession } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
@@ -198,7 +197,7 @@ export default async function GererProjetPage({
 
       <section className="mb-6">
         <h2 className="mb-3 text-lg font-bold text-encre-900">
-          {t.myProjects.membersTitle} ({accepted.length} / {project.participants_target})
+          {t.myProjects.membersTitle} ({accepted.length} / {project.units_planned})
         </h2>
         <Card className="p-0">
           <ul className="divide-y divide-sable-200">
@@ -223,35 +222,17 @@ export default async function GererProjetPage({
         </Card>
       </section>
 
-      {isOwner ? (
-        <Card>
-          <h2 className="font-semibold text-encre-900">{t.myLands.actions}</h2>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {project.status === 'proposition' ? (
-              <form action={submitProject}>
-                <input type="hidden" name="project_id" value={project.id} />
-                <Button type="submit" variant="collectif" size="sm">
-                  {t.myProjects.submitForReview}
-                </Button>
-              </form>
-            ) : null}
-            <LinkButton href={path(`/projets/${project.id}`)} variant="secondary" size="sm">
-              {t.myLands.seePublic}
-            </LinkButton>
-            {['proposition', 'analyse'].includes(project.status) ? (
-              <form action={cancelProject}>
-                <input type="hidden" name="project_id" value={project.id} />
-                <Button type="submit" variant="danger" size="sm">
-                  {t.myProjects.cancelProject}
-                </Button>
-              </form>
-            ) : null}
-          </div>
-          {project.status === 'analyse' ? (
-            <p className="mt-3 text-sm text-encre-400">{t.myProjects.underReview}</p>
-          ) : null}
-        </Card>
-      ) : null}
+      {/* Le cycle de vie du projet appartient à l'administration : la page
+          n'expose plus que la consultation de la fiche publique. */}
+      <Card>
+        <h2 className="font-semibold text-encre-900">{t.myLands.actions}</h2>
+        <p className="mt-2 text-sm text-encre-500">{t.myProjects.adminManaged}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <LinkButton href={path(`/projets/${project.id}`)} variant="secondary" size="sm">
+            {t.myLands.seePublic}
+          </LinkButton>
+        </div>
+      </Card>
     </div>
   )
 }
