@@ -96,13 +96,10 @@ export default async function AdminProjetsPage({
                   {f.date(project.created_at)}
                 </p>
                 <div className="mt-3 max-w-xs">
-                  <ProgressBar
-                    value={project.participants_confirmed}
-                    max={project.units_planned}
-                  />
+                  <ProgressBar value={project.units_reserved} max={project.units_planned} />
                   <p className="mt-1 text-xs text-encre-500">
-                    {project.participants_confirmed} / {project.units_planned}{' '}
-                    {t.projects.unitsTaken}
+                    {project.units_reserved} / {project.units_planned} {t.projects.unitsTaken} ·{' '}
+                    {project.participants_confirmed} {t.projects.membersCount}
                   </p>
                 </div>
 

@@ -68,6 +68,7 @@ export function AdminPricingForm({
       <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
         {project.unit_price ? (
           <span className="text-encre-700">
+            {t.projects.from}{' '}
             <span className="font-semibold">{f.dhCompact(project.unit_price)}</span>{' '}
             {t.projects.perUnit}
             {project.savings_percent ? (
@@ -114,14 +115,14 @@ export function AdminPricingForm({
           },
           {
             name: 'unit_surface_m2',
-            label: t.adminProjects.unitSurface,
+            label: t.adminProjects.unitSurfaceFrom,
             value: surface,
             set: setSurface,
             step: '0.5',
           },
           {
             name: 'unit_price_per_m2',
-            label: t.adminProjects.unitPricePerM2,
+            label: t.adminProjects.unitPricePerM2From,
             value: price,
             set: setPrice,
             step: '50',
@@ -151,6 +152,7 @@ export function AdminPricingForm({
 
       {preview ? (
         <p className="mt-3 flex flex-wrap items-baseline gap-x-3 text-sm">
+          <span className="text-encre-500">{t.projects.from}</span>
           <span className="font-bold text-zellige-600">{f.dh(preview.unit)}</span>
           <span className="text-encre-500">{t.projects.perUnit}</span>
           {preview.marketUnit ? (

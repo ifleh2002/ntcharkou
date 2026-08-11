@@ -209,7 +209,7 @@ export function AdminProjectForm({
             />
           </Field>
 
-          <Field label={t.adminProjects.unitSurface} htmlFor="unit_surface_m2">
+          <Field label={t.adminProjects.unitSurfaceFrom} htmlFor="unit_surface_m2">
             <input
               id="unit_surface_m2"
               name="unit_surface_m2"
@@ -222,7 +222,7 @@ export function AdminProjectForm({
             />
           </Field>
 
-          <Field label={t.adminProjects.unitPricePerM2} htmlFor="unit_price_per_m2">
+          <Field label={t.adminProjects.unitPricePerM2From} htmlFor="unit_price_per_m2">
             <input
               id="unit_price_per_m2"
               name="unit_price_per_m2"
@@ -259,6 +259,7 @@ export function AdminProjectForm({
               {t.adminProjects.preview}
             </p>
             <p className="mt-1 flex flex-wrap items-baseline gap-x-3">
+              <span className="text-sm text-encre-500">{t.projects.from}</span>
               <span className="text-2xl font-bold text-zellige-600">{f.dh(preview.unit)}</span>
               <span className="text-sm text-encre-500">{t.projects.perUnit}</span>
               {preview.marketUnit ? (

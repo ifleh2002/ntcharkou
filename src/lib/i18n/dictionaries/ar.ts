@@ -634,6 +634,9 @@ export const ar: Dictionary = {
     marketPriceLabel: 'ثمن السوق للوحدة',
     browse: 'تصفح المشاريع',
     browseLands: 'الاطلاع على الأراضي المتاحة',
+    from: 'ابتداءً من',
+    membersCount: 'منخرطاً',
+    pendingUnits: 'وحدة في انتظار المصادقة.',
   },
 
   myProjects: {
@@ -833,6 +836,10 @@ export const ar: Dictionary = {
     projectUnits: 'وحدة في المشروع',
     accept: 'المصادقة على الانخراط',
     reject: 'رفض',
+    unitSurfaceFrom: 'مساحة الوحدة — ابتداءً من (م²)',
+    unitPricePerM2From: 'الثمن التشاركي — ابتداءً من (درهم/م²)',
+    unitsLeft: 'الوحدات المتبقية',
+    overCapacity: 'يتجاوز هذا الطلب الوحدات المتبقية.',
   },
 
   admin: {

@@ -254,3 +254,83 @@ reset role;
 select set_config('request.jwt.claim.sub', '', true);
 
 \echo '=== Projets administratifs : contrôles passés ==='
+
+-- =============================================================================
+-- Un adhérent peut réserver plusieurs unités : c'est l'unité qui remplit le
+-- projet, pas la personne.
+-- =============================================================================
+
+begin;
+set local client_min_messages = warning;
+
+select set_config('request.jwt.claim.sub', 'a4444444-4444-4444-4444-444444444444', true);
+
+do $$
+declare
+  proj uuid;
+  part uuid;
+begin
+  select id into proj from public.projects where title = 'Résidence test';
+  -- Grille de départ : 16 unités, 1 déjà accordée au premier adhérent.
+  perform public.admin_set_project_pricing(proj, 16, 90, 5500, 9000);
+
+  -- Un second participant demande 2 unités.
+  insert into public.project_participants (project_id, participant_id, units_wanted)
+  values (proj, 'a3333333-3333-3333-3333-333333333333', 2)
+  returning id into part;
+
+  -- En attente : 2 unités pour 1 personne. Les deux grandeurs sont distinctes.
+  if (select units_pending from public.projects_public where id = proj) <> 2 then
+    raise exception 'Les unités en attente doivent sommer units_wanted, pas compter les personnes';
+  end if;
+  if (select participants_pending from public.projects_public where id = proj) <> 1 then
+    raise exception 'Les candidatures en attente comptent des personnes';
+  end if;
+
+  perform public.admin_decide_participation(part, true);
+
+  -- Réservé : 1 (premier adhérent) + 2 = 3 unités, pour 2 personnes.
+  if (select units_reserved from public.projects_public where id = proj) <> 3 then
+    raise exception 'Unités réservées erronées : % (attendu 3)',
+      (select units_reserved from public.projects_public where id = proj);
+  end if;
+  if (select participants_confirmed from public.projects_public where id = proj) <> 2 then
+    raise exception 'Adhérents confirmés erronés';
+  end if;
+end;
+$$;
+
+-- --- Le groupe se ferme sur les unités, pas sur le nombre d'adhérents -------
+do $$
+declare
+  proj uuid;
+begin
+  select id into proj from public.projects where title = 'Résidence test';
+  -- On ramène le projet à 5 unités : 3 sont déjà réservées.
+  perform public.admin_set_project_pricing(proj, 5, 90, 5500, 9000);
+  update public.projects set status = 'ouvert' where id = proj;
+
+  -- Le premier adhérent porte sa réservation de 1 à 3 unités : 3 + 2 = 5.
+  update public.project_participants
+     set units_wanted = 3
+   where project_id = proj
+     and participant_id = 'a2222222-2222-2222-2222-222222222222';
+
+  if (select units_reserved from public.projects_public where id = proj) <> 5 then
+    raise exception 'Les 5 unités doivent être réservées, obtenu %',
+      (select units_reserved from public.projects_public where id = proj);
+  end if;
+  -- Deux personnes seulement, mais 5 unités : le projet est bel et bien complet.
+  if (select participants_confirmed from public.projects_public where id = proj) <> 2 then
+    raise exception 'Le groupe compte 2 adhérents pour 5 unités';
+  end if;
+  if (select status from public.projects where id = proj) <> 'groupe_constitue' then
+    raise exception 'Le groupe doit se constituer dès que toutes les unités sont prises';
+  end if;
+end;
+$$;
+
+select set_config('request.jwt.claim.sub', '', true);
+commit;
+
+\echo '=== Unités réservées : contrôles passés ==='

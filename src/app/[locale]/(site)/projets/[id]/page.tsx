@@ -56,7 +56,8 @@ export default async function ProjetDetailPage({
     participation = (data as { id: string; status: ParticipationStatus } | null) ?? null
   }
 
-  const remaining = Math.max(0, project.units_planned - project.participants_confirmed)
+  // Il reste des UNITES a pourvoir, pas des places nominatives.
+  const remaining = Math.max(0, project.units_planned - project.units_reserved)
   const currentStep = PROJECT_WORKFLOW.indexOf(project.status)
 
   return (
@@ -157,11 +158,15 @@ export default async function ProjetDetailPage({
                   { label: t.projects.plannedUnits, value: project.units_planned },
                   {
                     label: t.projects.unitSurface,
-                    value: project.unit_surface_m2 ? f.surface(project.unit_surface_m2) : '—',
+                    value: project.unit_surface_m2
+                      ? `${t.projects.from} ${f.surface(project.unit_surface_m2)}`
+                      : '—',
                   },
                   {
                     label: t.projects.participatoryPrice,
-                    value: project.unit_price ? f.dh(project.unit_price) : '—',
+                    value: project.unit_price
+                      ? `${t.projects.from} ${f.dh(project.unit_price)}`
+                      : '—',
                   },
                   {
                     label: t.projects.marketPriceLabel,
@@ -218,20 +223,23 @@ export default async function ProjetDetailPage({
           <Card>
             <h2 className="font-semibold text-encre-900">{t.projects.groupTitle}</h2>
             <div className="mt-3">
-              <ProgressBar value={project.participants_confirmed} max={project.units_planned} />
+              <ProgressBar value={project.units_reserved} max={project.units_planned} />
               <p className="mt-2 text-sm">
                 <span className="font-bold text-encre-900">
-                  {project.participants_confirmed} / {project.units_planned}
+                  {project.units_reserved} / {project.units_planned}
                 </span>{' '}
                 <span className="text-encre-500">{t.projects.unitsTaken}</span>
+              </p>
+              <p className="text-xs text-encre-400">
+                {project.participants_confirmed} {t.projects.membersCount}
               </p>
             </div>
             <p className="mt-3 text-sm text-encre-500">
               {remaining > 0
                 ? `${remaining} ${remaining > 1 ? t.projects.placesLeft : t.projects.placeLeft}`
                 : t.projects.groupFull}
-              {project.participants_pending > 0
-                ? ` ${project.participants_pending} ${t.projects.pendingApplications}`
+              {project.units_pending > 0
+                ? ` ${project.units_pending} ${t.projects.pendingUnits}`
                 : ''}
             </p>
 

@@ -249,8 +249,12 @@ export interface ProjectPublic {
   cover_image_path: string | null
   opened_at: string | null
   created_at: string
+  /** Des personnes. */
   participants_confirmed: number
   participants_pending: number
+  /** Des unités — c'est ce qui remplit le projet. Un adhérent peut en réserver plusieurs. */
+  units_reserved: number
+  units_pending: number
 }
 
 export interface MatchCriterion {

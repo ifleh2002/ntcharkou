@@ -258,7 +258,10 @@ insert into public.projects (
   'Résidence des Médecins — Casablanca',
   'casablanca-settat',
   (select id from public.cities where name_fr = 'Casablanca'),
-  'appartement_immeuble', 'r4', 20, 2,
+  -- Deux unites : le groupe se clot quand les DEUX sont reservees. C'est
+  -- l'unite qui remplit un projet, pas la personne — un adherent peut en
+  -- demander plusieurs.
+  'appartement_immeuble', 'r4', 2, 2,
   'medecin', 'proposition'
 );
 

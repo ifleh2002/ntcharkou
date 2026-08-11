@@ -58,17 +58,21 @@ export function ProjectCard({ project, tr }: { project: ProjectPublic; tr: Trans
           {project.unit_surface_m2 ? (
             <div>
               <dt className="text-xs text-encre-400">{t.projects.unitSurface}</dt>
-              <dd className="text-encre-700">{f.surface(project.unit_surface_m2)}</dd>
+              {/* La grille est un plancher : les unités varient d'un lot à l'autre. */}
+              <dd className="text-encre-700">
+                {t.projects.from} {f.surface(project.unit_surface_m2)}
+              </dd>
             </div>
           ) : null}
         </dl>
 
-        {/* Avancement mesure sur le nombre total d'unites du projet. */}
+        {/* Avancement mesure en UNITES reservees : un adherent peut en prendre
+            plusieurs, donc compter les personnes sous-estimerait le remplissage. */}
         <div className="mt-auto pt-1">
-          <ProgressBar value={project.participants_confirmed} max={project.units_planned} />
+          <ProgressBar value={project.units_reserved} max={project.units_planned} />
           <p className="mt-1.5 text-xs text-encre-500">
             <span className="font-semibold text-encre-900">
-              {project.participants_confirmed} / {project.units_planned}
+              {project.units_reserved} / {project.units_planned}
             </span>{' '}
             {t.projects.unitsTaken}
           </p>
@@ -100,6 +104,7 @@ export function PriceComparison({
   return (
     <div className="rounded-lg border border-zellige-200 bg-zellige-50 p-3">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <span className="text-xs text-encre-500">{t.projects.from}</span>
         <span
           className={
             size === 'lg'
@@ -124,7 +129,7 @@ export function PriceComparison({
 
       {project.unit_price_per_m2 ? (
         <p className="mt-1 text-xs text-encre-400">
-          {f.dh(project.unit_price_per_m2)}/{f.sqm}
+          {t.projects.from} {f.dh(project.unit_price_per_m2)}/{f.sqm}
           {project.market_price_per_m2
             ? ` · ${t.projects.marketPrice} ${f.dh(project.market_price_per_m2)}/${f.sqm}`
             : ''}

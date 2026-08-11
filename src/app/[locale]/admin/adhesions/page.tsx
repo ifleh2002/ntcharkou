@@ -23,6 +23,7 @@ interface PendingRow {
   project_title: string
   project_ref: string | null
   units_planned: number
+  units_reserved: number
   participant: string
   body: ProfessionalBody | null
   units_wanted: number
@@ -78,10 +79,28 @@ export default async function AdminAdhesionsPage({
                     {row.project_title}
                   </Link>
                 </h2>
+                {/* Unités restantes affichées avant la décision : accepter plus
+                    d'unités qu'il n'en reste ne se rattrape pas silencieusement. */}
                 <p className="mt-1 text-sm text-encre-500">
-                  {row.participant} · {f.relative(row.created_at)} ·{' '}
-                  {t.adminProjects.projectUnits} : {row.units_planned}
+                  {row.participant} · {f.relative(row.created_at)}
                 </p>
+                <p className="mt-0.5 text-sm">
+                  <span
+                    className={
+                      row.units_wanted > row.units_planned - row.units_reserved
+                        ? 'font-semibold text-argile-600'
+                        : 'text-encre-500'
+                    }
+                  >
+                    {t.adminProjects.unitsLeft} :{' '}
+                    {Math.max(0, row.units_planned - row.units_reserved)} / {row.units_planned}
+                  </span>
+                </p>
+                {row.units_wanted > row.units_planned - row.units_reserved ? (
+                  <p className="mt-1 text-sm font-semibold text-argile-600">
+                    ⚠ {t.adminProjects.overCapacity}
+                  </p>
+                ) : null}
                 {row.message ? (
                   <p className="mt-2 rounded-lg bg-sable-100 px-3 py-2 text-sm text-encre-700">
                     {row.message}

@@ -643,6 +643,9 @@ export const fr = {
     marketPriceLabel: 'Prix du marché par unité',
     browse: 'Parcourir les projets',
     browseLands: 'Voir les terrains disponibles',
+    from: 'à partir de',
+    membersCount: 'adhérents',
+    pendingUnits: 'unités en attente de validation.',
   },
 
   myProjects: {
@@ -847,6 +850,10 @@ export const fr = {
     projectUnits: 'unités au projet',
     accept: 'Valider l’adhésion',
     reject: 'Refuser',
+    unitSurfaceFrom: 'Surface d’une unité — à partir de (m²)',
+    unitPricePerM2From: 'Prix participatif — à partir de (DH/m²)',
+    unitsLeft: 'Unités encore disponibles',
+    overCapacity: 'Cette demande dépasse les unités restantes.',
   },
 
   admin: {
