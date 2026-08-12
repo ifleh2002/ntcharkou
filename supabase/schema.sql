@@ -4631,6 +4631,15 @@ comment on column public.projects.title_ar is
 -- Les deux graphies sont publiees telles quelles ; c'est l'application qui
 -- choisit selon la langue, comme elle le fait deja pour les noms de lieux.
 
+-- Une version anterieure de `lands_in_bounds` renvoyait
+-- `setof public.land_listings_public` : PostgreSQL en deduisait une dependance
+-- sur le type de la vue, qui ne pouvait plus etre recreee (« cannot drop view
+-- ... because other objects depend on it »). La fonction actuelle ne dependant
+-- plus du type de la vue, ce `drop` ne vise que l'ancienne — et il est sans
+-- effet sur une base ou elle n'a jamais existe. La migration 14 la recree.
+drop function if exists public.lands_in_bounds(
+  double precision, double precision, double precision, double precision, integer);
+
 drop view if exists public.land_listings_public;
 
 create view public.land_listings_public
