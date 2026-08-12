@@ -69,13 +69,18 @@ export function ProjectCard({ project, tr }: { project: ProjectPublic; tr: Trans
         {/* Avancement mesure en UNITES reservees : un adherent peut en prendre
             plusieurs, donc compter les personnes sous-estimerait le remplissage. */}
         <div className="mt-auto pt-1">
-          <ProgressBar value={project.units_reserved} max={project.units_planned} />
-          <p className="mt-1.5 text-xs text-encre-500">
-            <span className="font-semibold text-encre-900">
-              {project.units_reserved} / {project.units_planned}
-            </span>{' '}
-            {t.projects.unitsTaken}
-          </p>
+          <ProgressBar
+            value={project.units_reserved}
+            max={project.units_planned}
+            caption={
+              <p className="mt-1.5 text-xs text-encre-500">
+                <span className="font-semibold text-encre-900">
+                  {project.units_reserved} / {project.units_planned}
+                </span>{' '}
+                {t.projects.unitsTaken}
+              </p>
+            }
+          />
         </div>
       </div>
     </Link>

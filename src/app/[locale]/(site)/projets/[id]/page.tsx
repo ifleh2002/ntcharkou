@@ -223,16 +223,23 @@ export default async function ProjetDetailPage({
           <Card>
             <h2 className="font-semibold text-encre-900">{t.projects.groupTitle}</h2>
             <div className="mt-3">
-              <ProgressBar value={project.units_reserved} max={project.units_planned} />
-              <p className="mt-2 text-sm">
-                <span className="font-bold text-encre-900">
-                  {project.units_reserved} / {project.units_planned}
-                </span>{' '}
-                <span className="text-encre-500">{t.projects.unitsTaken}</span>
-              </p>
-              <p className="text-xs text-encre-400">
-                {project.participants_confirmed} {t.projects.membersCount}
-              </p>
+              <ProgressBar
+                value={project.units_reserved}
+                max={project.units_planned}
+                caption={
+                  <>
+                    <p className="mt-2 text-sm">
+                      <span className="font-bold text-encre-900">
+                        {project.units_reserved} / {project.units_planned}
+                      </span>{' '}
+                      <span className="text-encre-500">{t.projects.unitsTaken}</span>
+                    </p>
+                    <p className="text-xs text-encre-400">
+                      {project.participants_confirmed} {t.projects.membersCount}
+                    </p>
+                  </>
+                }
+              />
             </div>
             <p className="mt-3 text-sm text-encre-500">
               {remaining > 0

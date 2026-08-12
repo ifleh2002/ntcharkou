@@ -141,7 +141,19 @@ export default async function GererProjetPage({
           })}
         </ol>
         <div className="mt-4 max-w-sm">
-          <ProgressBar value={project.participants_confirmed} max={project.participants_target} />
+          {/* Avancement en unités : c'est l'unité qui remplit le projet. */}
+          <ProgressBar
+            value={project.units_reserved}
+            max={project.units_planned}
+            caption={
+              <p className="mt-1.5 text-xs text-encre-500">
+                <span className="font-semibold text-encre-900">
+                  {project.units_reserved} / {project.units_planned}
+                </span>{' '}
+                {t.projects.unitsTaken}
+              </p>
+            }
+          />
         </div>
       </Card>
 

@@ -145,16 +145,33 @@ export function Badge({
 }
 
 /** Barre de progression d'un groupe : 14 / 20 participants. */
+/**
+ * Barre d'avancement.
+ *
+ * Les deux bornes sont assainies avant tout calcul : une valeur absente ou non
+ * numerique donnerait « NaN % » et une largeur CSS invalide, laissant la barre
+ * pleine — soit exactement le contraire de ce qu'elle doit dire. Le cas se
+ * produit des qu'une colonne attendue manque, par exemple entre le deploiement
+ * du code et l'application d'une migration.
+ *
+ * `caption` remplace la legende par defaut ; `null` la supprime, pour un appelant
+ * qui affiche la sienne.
+ */
 export function ProgressBar({
   value,
   max,
   tone = 'zellige',
+  caption,
 }: {
-  value: number
-  max: number
+  value: number | null | undefined
+  max: number | null | undefined
   tone?: 'zellige' | 'argile'
+  caption?: React.ReactNode
 }) {
-  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0
+  const safeValue = Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : 0
+  const safeMax = Number.isFinite(Number(max)) ? Math.max(0, Number(max)) : 0
+  const pct = safeMax > 0 ? Math.min(100, Math.round((safeValue / safeMax) * 100)) : 0
+
   return (
     <div>
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-sable-300">
@@ -163,9 +180,13 @@ export function ProgressBar({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="mt-1.5 text-xs font-medium text-encre-500">
-        {value} / {max} — {pct} %
-      </p>
+      {caption === undefined ? (
+        <p className="mt-1.5 text-xs font-medium text-encre-500">
+          {safeValue} / {safeMax} — {pct} %
+        </p>
+      ) : (
+        caption
+      )}
     </div>
   )
 }

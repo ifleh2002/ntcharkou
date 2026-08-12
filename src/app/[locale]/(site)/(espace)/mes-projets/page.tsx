@@ -108,8 +108,14 @@ export default async function MesProjetsPage({
                   </p>
                   <div className="mt-3 max-w-xs">
                     <ProgressBar
-                      value={project.participants_confirmed}
-                      max={project.participants_target}
+                      value={project.units_reserved}
+                      max={project.units_planned}
+                      caption={
+                        <p className="mt-1.5 text-xs text-encre-500">
+                          {project.units_reserved} / {project.units_planned}{' '}
+                          {t.projects.unitsTaken}
+                        </p>
+                      }
                     />
                   </div>
                 </div>
