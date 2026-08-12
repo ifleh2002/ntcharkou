@@ -6,7 +6,9 @@ import { Badge, Button, Card, LinkButton, ProgressBar } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
+import { SchemaGapAlert } from '@/components/schema-gap-alert'
 import { localizeProject } from '@/lib/queries'
+import { findSchemaGaps } from '@/lib/schema-check'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { ProjectPublic, ProjectStatus } from '@/lib/types'
 
@@ -39,6 +41,8 @@ export default async function AdminProjetsPage({
   await requireAdmin()
   const supabase = await createSupabaseServerClient()
 
+  const gaps = await findSchemaGaps()
+
   const { data } = await supabase
     .from('projects_public')
     .select('*')
@@ -64,6 +68,8 @@ export default async function AdminProjetsPage({
           {t.adminProjects.newTitle}
         </LinkButton>
       </header>
+
+      <SchemaGapAlert gaps={gaps} t={t} />
 
       <div className="space-y-4">
         {projects.map((project) => {

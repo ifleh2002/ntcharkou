@@ -14,9 +14,14 @@
 --   3. Adhesions — les candidatures remontent a l'administration, qui les
 --      tranche ; le candidat est notifie de la decision.
 --
--- La migration est rejouable : chaque objet est precede de son `drop ... if
--- exists`, y compris sous son nouveau nom. La rejouer sur une base deja a jour
--- ne produit que des NOTICE.
+-- La migration est rejouable, mais UNIQUEMENT dans l'ordre : chaque objet est
+-- precede de son `drop ... if exists`, y compris sous son nouveau nom.
+--
+-- ⚠ Ne la rejouez pas APRES une migration ulterieure. Elle recree la vue
+--   `projects_public` dans sa forme d'alors : la rejouer apres la migration 12
+--   supprime les colonnes `units_reserved` / `units_pending`, et les compteurs
+--   d'unites retombent a 0. Si cela arrive, rejouez simplement la migration la
+--   plus recente, qui retablit la vue complete.
 
 -- -----------------------------------------------------------------------------
 -- 1. Prix et capacite d'une unite

@@ -855,6 +855,12 @@ export const fr = {
     unitPricePerM2From: 'Prix participatif — à partir de (DH/m²)',
     unitsLeft: 'Unités encore disponibles',
     overCapacity: 'Cette demande dépasse les unités restantes.',
+    schemaGapTitle: 'Migration non appliquée',
+    schemaGapBody:
+      'Le code déployé attend des colonnes absentes de la base : les compteurs concernés affichent 0 tant que la migration n’est pas exécutée. Appliquez le ou les fichiers ci-dessous dans l’éditeur SQL Supabase.',
+    schemaGapColumn: 'colonne attendue :',
+    decisionSaved: 'Décision enregistrée. Le candidat a été notifié.',
+    decisionFailed: 'La décision n’a pas pu être enregistrée',
   },
 
   admin: {

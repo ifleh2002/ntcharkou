@@ -841,6 +841,12 @@ export const ar: Dictionary = {
     unitPricePerM2From: 'الثمن التشاركي — ابتداءً من (درهم/م²)',
     unitsLeft: 'الوحدات المتبقية',
     overCapacity: 'يتجاوز هذا الطلب الوحدات المتبقية.',
+    schemaGapTitle: 'ترحيل غير مطبَّق',
+    schemaGapBody:
+      'ينتظر الكود المنشور أعمدة غير موجودة في قاعدة البيانات: تعرض العدادات المعنية 0 ما لم يُطبَّق الترحيل. نفّذ الملفات أدناه في محرر SQL في Supabase.',
+    schemaGapColumn: 'العمود المنتظر:',
+    decisionSaved: 'تم تسجيل القرار، وأُشعِر المترشح.',
+    decisionFailed: 'تعذّر تسجيل القرار',
   },
 
   admin: {

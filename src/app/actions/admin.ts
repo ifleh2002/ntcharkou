@@ -168,13 +168,21 @@ export async function decideParticipation(formData: FormData) {
   const reason = ((formData.get('reason') as string) || '').trim() || null
 
   const { supabase, path } = await adminClient()
-  await supabase.rpc('admin_decide_participation', {
+  const { error } = await supabase.rpc('admin_decide_participation', {
     p_participation: participationId,
     p_accept: accept,
     p_reason: reason,
   })
 
+  // Une décision qui échoue en silence est indiscernable d'une décision prise :
+  // l'écran se rechargeait à l'identique et le compteur ne bougeait pas, sans
+  // que rien ne l'explique. L'erreur remonte donc à l'administration.
+  if (error) {
+    redirect(`${path('/admin/adhesions')}?erreur=${encodeURIComponent(error.message)}`)
+  }
+
   revalidatePath(path('/admin/projets'))
   revalidatePath(path('/admin/adhesions'))
   revalidatePath(path('/projets'))
+  redirect(`${path('/admin/adhesions')}?traite=1`)
 }

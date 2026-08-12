@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { decideParticipation } from '@/app/actions/admin'
-import { Badge, Button, Card, EmptyState } from '@/components/ui'
+import { SchemaGapAlert } from '@/components/schema-gap-alert'
+import { Alert, Badge, Button, Card, EmptyState } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
+import { findSchemaGaps } from '@/lib/schema-check'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { ProfessionalBody } from '@/lib/types'
 
@@ -33,17 +35,23 @@ interface PendingRow {
 
 export default async function AdminAdhesionsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const { locale: raw } = await params
   const locale = resolveLocale(raw)
   const { t, f, path } = translation(locale)
+  const query = await searchParams
 
   await requireAdmin()
   const supabase = await createSupabaseServerClient()
 
-  const { data } = await supabase.rpc('admin_pending_participations')
+  const [{ data }, gaps] = await Promise.all([
+    supabase.rpc('admin_pending_participations'),
+    findSchemaGaps(),
+  ])
   const pending = (data ?? []) as PendingRow[]
 
   return (
@@ -52,6 +60,22 @@ export default async function AdminAdhesionsPage({
         <h1 className="text-2xl font-bold text-encre-900">{t.adminProjects.membershipTitle}</h1>
         <p className="mt-1 max-w-2xl text-sm text-encre-500">{t.adminProjects.membershipLead}</p>
       </header>
+
+      <SchemaGapAlert gaps={gaps} t={t} />
+
+      {typeof query.erreur === 'string' ? (
+        <div className="mb-5">
+          <Alert tone="danger" title={t.adminProjects.decisionFailed}>
+            {query.erreur}
+          </Alert>
+        </div>
+      ) : null}
+
+      {query.traite ? (
+        <div className="mb-5">
+          <Alert tone="succes">{t.adminProjects.decisionSaved}</Alert>
+        </div>
+      ) : null}
 
       {pending.length === 0 ? (
         <EmptyState
