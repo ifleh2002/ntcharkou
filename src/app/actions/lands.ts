@@ -101,6 +101,7 @@ export async function saveLand(formData: FormData): Promise<LandActionResult> {
   } = await supabase.auth.getUser()
   if (!user) return { error: t.auth.errCredentials }
 
+  const zonings = formData.getAll('zonings').filter((v): v is string => typeof v === 'string')
   const parsed = landSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     return {
@@ -152,6 +153,9 @@ export async function saveLand(formData: FormData): Promise<LandActionResult> {
       // La traduction reste facultative : vide, le français sert de repli à
       // l'affichage plutôt que de laisser un titre absent en arabe.
       title_ar: values.title_ar || null,
+      // Le zonage principal est réintroduit côté base si l'utilisateur ne
+      // l'a pas coché : un terrain doit rester trouvable via son propre zonage.
+      zonings: zonings.length ? zonings : null,
       description: values.description || null,
       description_ar: values.description_ar || null,
       region_code: values.region_code,

@@ -16,6 +16,7 @@ export const fr = {
 
   nav: {
     lands: 'Terrains',
+    map: 'Carte',
     projects: 'Projets participatifs',
     howItWorks: 'Comment ça marche ?',
     faq: 'FAQ',
@@ -503,6 +504,9 @@ export const fr = {
     descriptionAr: 'Description (arabe)',
     observationsAr: 'Observations (arabe)',
     arabicHint: 'Facultatif. Sans traduction, la version française s’affiche.',
+    mainZoning: 'Zonage principal',
+    otherZonings: 'Autres zonages applicables',
+    otherZoningsHint: 'Un terrain relève parfois de plusieurs zonages. Le zonage principal est ajouté automatiquement.',
   },
 
   requests: {
@@ -1065,6 +1069,26 @@ export const fr = {
     daysAgo: 'il y a {n} j',
   },
 
+  map: {
+    title: 'Carte des terrains',
+    lead: 'Chaque parcelle est tracée à son emplacement réel. La couleur indique sa disponibilité.',
+    emptyTitle: 'Aucun terrain à afficher',
+    emptyBody: 'Les terrains publiés apparaîtront ici, avec leur contour et leur statut.',
+    openLand: 'Voir le terrain →',
+    drawTitle: 'Tracer la parcelle',
+    drawHint:
+      'Cliquez sur chaque angle du terrain. Les points se relient dans l’ordre et le contour se ferme automatiquement.',
+    points: 'point(s)',
+    undo: 'Annuler le dernier point',
+    clear: 'Effacer le tracé',
+    saveParcel: 'Enregistrer la parcelle',
+    parcelSaved: 'Parcelle enregistrée. La surface a été recalculée sur le tracé.',
+    needThreePoints: 'Trois points au minimum sont nécessaires pour délimiter une surface.',
+    parcelArea: 'Surface mesurée sur le tracé',
+    parcelPerimeter: 'Périmètre',
+    marketStatus: 'Disponibilité',
+  },
+
   enums: {
     role: {
       participant: 'Participant',
@@ -1210,6 +1234,13 @@ export const fr = {
       waterShort: 'Eau',
       electricityShort: 'Électricité',
       sewageShort: 'Assainissement',
+    },
+    marketStatus: {
+      disponible: 'Disponible',
+      en_negociation: 'En négociation',
+      reserve: 'Réservé',
+      vendu: 'Vendu',
+      masque: 'À vérifier',
     },
   },
 }

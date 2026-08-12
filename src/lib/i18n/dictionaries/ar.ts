@@ -21,6 +21,7 @@ export const ar: Dictionary = {
 
   nav: {
     lands: 'الأراضي',
+    map: 'الخريطة',
     projects: 'المشاريع التشاركية',
     howItWorks: 'كيف تعمل المنصة؟',
     faq: 'الأسئلة الشائعة',
@@ -497,6 +498,9 @@ export const ar: Dictionary = {
     descriptionAr: 'الوصف (بالعربية)',
     observationsAr: 'ملاحظات (بالعربية)',
     arabicHint: 'اختياري. بدون ترجمة، تُعرض النسخة الفرنسية.',
+    mainZoning: 'التخصيص العمراني الرئيسي',
+    otherZonings: 'تخصيصات أخرى منطبقة',
+    otherZoningsHint: 'قد تخضع الأرض لعدة تخصيصات. يُضاف التخصيص الرئيسي تلقائياً.',
   },
 
   requests: {
@@ -1049,6 +1053,25 @@ export const ar: Dictionary = {
     daysAgo: 'منذ {n} يوم',
   },
 
+  map: {
+    title: 'خريطة الأراضي',
+    lead: 'كل قطعة مرسومة في موقعها الفعلي، ويدل اللون على مدى توفرها.',
+    emptyTitle: 'لا توجد أرض للعرض',
+    emptyBody: 'ستظهر هنا الأراضي المنشورة بحدودها وحالتها.',
+    openLand: 'عرض الأرض ←',
+    drawTitle: 'رسم القطعة',
+    drawHint: 'انقر على كل زاوية من الأرض. تُوصل النقاط بالترتيب ويُغلق المحيط تلقائياً.',
+    points: 'نقطة',
+    undo: 'التراجع عن آخر نقطة',
+    clear: 'مسح الرسم',
+    saveParcel: 'حفظ القطعة',
+    parcelSaved: 'تم حفظ القطعة، وأُعيد حساب المساحة من الرسم.',
+    needThreePoints: 'يلزم ثلاث نقاط على الأقل لتحديد مساحة.',
+    parcelArea: 'المساحة المقاسة من الرسم',
+    parcelPerimeter: 'المحيط',
+    marketStatus: 'التوفر',
+  },
+
   enums: {
     role: {
       participant: 'مشارك',
@@ -1194,6 +1217,13 @@ export const ar: Dictionary = {
       waterShort: 'الماء',
       electricityShort: 'الكهرباء',
       sewageShort: 'التطهير',
+    },
+    marketStatus: {
+      disponible: 'متاح',
+      en_negociation: 'قيد التفاوض',
+      reserve: 'محجوز',
+      vendu: 'مُباع',
+      masque: 'قيد التحقق',
     },
   },
 }

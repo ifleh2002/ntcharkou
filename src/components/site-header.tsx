@@ -24,6 +24,7 @@ export async function SiteHeader() {
 
   const links = [
     { href: '/terrains', label: t.nav.lands },
+    { href: '/carte', label: t.nav.map },
     { href: '/projets', label: t.nav.projects },
     { href: '/comment-ca-marche', label: t.nav.howItWorks },
     { href: '/faq', label: t.nav.faq },

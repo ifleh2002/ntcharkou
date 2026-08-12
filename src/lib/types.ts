@@ -4,6 +4,8 @@
 //  ce fichier reste la reference lisible cote application.)
 // =============================================================================
 
+import type { GeoPolygon } from './map'
+
 export type UserRole = 'participant' | 'owner' | 'admin'
 
 export type OwnerKind = 'particulier' | 'societe' | 'heritiers' | 'mandataire'
@@ -69,6 +71,13 @@ export type ProfessionalBody =
   | 'entrepreneur'
   | 'cadre'
   | 'autre'
+
+export type LandMarketStatus =
+  | 'disponible'
+  | 'en_negociation'
+  | 'reserve'
+  | 'vendu'
+  | 'masque'
 
 export type SameBodyPreference = 'oui' | 'non' | 'indifferent'
 export type RequestStatus = 'brouillon' | 'active' | 'en_pause' | 'satisfaite' | 'archivee'
@@ -167,6 +176,8 @@ export interface LandListingPublic {
   latitude: number | null
   longitude: number | null
   zoning: LandZoning
+  /** Ensemble des zonages ; `zoning` reste le principal. */
+  zonings: LandZoning[] | null
   surface_m2: number
   facade_m: number | null
   depth_m: number | null
@@ -186,6 +197,13 @@ export interface LandListingPublic {
   network_other: string | null
   estimated_units: number | null
   status: ListingStatus
+  /** Axe distinct du statut de publication : c'est lui qui colore la carte. */
+  market_status: LandMarketStatus
+  parcel: GeoPolygon | null
+  parcel_area_m2: number | null
+  parcel_perimeter_m: number | null
+  map_lat: number | null
+  map_lng: number | null
   published_at: string | null
   created_at: string
   view_count: number

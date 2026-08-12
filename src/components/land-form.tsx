@@ -392,7 +392,7 @@ export function LandForm({
             />
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t.lands.zoning} htmlFor="zoning" required>
+              <Field label={t.landForm.mainZoning} htmlFor="zoning" required>
                 <select id="zoning" name="zoning" required className="champ" defaultValue="">
                   <option value="">{t.landForm.chooseZoning}</option>
                   {ZONING_ORDER.map((zoning) => (
@@ -402,6 +402,23 @@ export function LandForm({
                   ))}
                 </select>
               </Field>
+              <fieldset className="sm:col-span-2">
+                <legend className="etiquette">{t.landForm.otherZonings}</legend>
+                <p className="mb-2 text-xs text-encre-400">{t.landForm.otherZoningsHint}</p>
+                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                  {ZONING_ORDER.map((zoning) => (
+                    <label key={zoning} className="flex items-center gap-2 text-sm text-encre-700">
+                      <input
+                        type="checkbox"
+                        name="zonings"
+                        value={zoning}
+                        className="size-4 accent-[var(--color-argile-500)]"
+                      />
+                      {t.enums.zoning[zoning]}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
               <Field label={t.landForm.surface} htmlFor="surface_m2" required>
                 <input
                   id="surface_m2"

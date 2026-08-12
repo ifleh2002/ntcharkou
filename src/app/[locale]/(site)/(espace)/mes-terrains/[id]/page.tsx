@@ -4,7 +4,9 @@ import { notFound } from 'next/navigation'
 import { archiveLand, deleteLand, submitLand } from '@/app/actions/lands'
 import { Alert, Badge, Button, Card, LinkButton, StatCard } from '@/components/ui'
 import { requireSession } from '@/lib/auth'
+import { ParcelEditor } from '@/components/parcel-editor'
 import { getDictionary } from '@/lib/i18n'
+import type { GeoPolygon } from '@/lib/map'
 import { resolveLocale, translation } from '@/lib/i18n/server'
 import { LISTING_WORKFLOW } from '@/lib/labels'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
@@ -68,6 +70,14 @@ export default async function GererTerrainPage({
     .maybeSingle<LandRow>()
 
   if (!land) notFound()
+
+  // La géométrie vient de la vue : la table la stocke en WKB, que le navigateur
+  // ne sait pas lire. La vue la publie en GeoJSON, directement exploitable.
+  const { data: geo } = await supabase
+    .from('land_listings_public')
+    .select('parcel, map_lat, map_lng')
+    .eq('id', id)
+    .maybeSingle<{ parcel: GeoPolygon | null; map_lat: number | null; map_lng: number | null }>()
 
   const [documents, images, summary] = await Promise.all([
     supabase.from('land_documents').select('id, kind, label, created_at').eq('land_id', id),
@@ -240,6 +250,21 @@ export default async function GererTerrainPage({
       <p className="mt-6 text-xs text-encre-400">
         {session.profile.first_name} {session.profile.last_name} — {t.myLands.ownerNote}
       </p>
+      {/* Tracé de la parcelle : c'est le propriétaire qui connaît ses limites. */}
+      <section className="mt-8">
+        <h2 className="mb-3 text-lg font-bold text-encre-900">{t.map.drawTitle}</h2>
+        <Card>
+          <ParcelEditor
+            landId={land.id}
+            initial={geo?.parcel ?? null}
+            center={
+              geo?.map_lat != null && geo?.map_lng != null ? [geo.map_lat, geo.map_lng] : null
+            }
+            t={t}
+          />
+        </Card>
+      </section>
+
     </div>
   )
 }
