@@ -637,6 +637,7 @@ export const ar: Dictionary = {
     from: 'ابتداءً من',
     membersCount: 'منخرطاً',
     pendingUnits: 'وحدة في انتظار المصادقة.',
+    pendingUnitsShort: 'في انتظار المصادقة',
   },
 
   myProjects: {

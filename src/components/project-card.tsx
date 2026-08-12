@@ -73,12 +73,22 @@ export function ProjectCard({ project, tr }: { project: ProjectPublic; tr: Trans
             value={project.units_reserved}
             max={project.units_planned}
             caption={
-              <p className="mt-1.5 text-xs text-encre-500">
-                <span className="font-semibold text-encre-900">
-                  {project.units_reserved} / {project.units_planned}
-                </span>{' '}
-                {t.projects.unitsTaken}
-              </p>
+              <>
+                <p className="mt-1.5 text-xs text-encre-500">
+                  <span className="font-semibold text-encre-900">
+                    {project.units_reserved} / {project.units_planned}
+                  </span>{' '}
+                  {t.projects.unitsTaken}
+                </p>
+                {/* Sans cette ligne, une demande deposee mais pas encore
+                    tranchee semble s'etre perdue : le compteur ne compte que
+                    les adhesions validees. */}
+                {project.units_pending > 0 ? (
+                  <p className="mt-0.5 text-xs text-safran-500">
+                    ⏳ {project.units_pending} {t.projects.pendingUnitsShort}
+                  </p>
+                ) : null}
+              </>
             }
           />
         </div>

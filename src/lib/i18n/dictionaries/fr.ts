@@ -646,6 +646,7 @@ export const fr = {
     from: 'à partir de',
     membersCount: 'adhérents',
     pendingUnits: 'unités en attente de validation.',
+    pendingUnitsShort: 'en attente de validation',
   },
 
   myProjects: {

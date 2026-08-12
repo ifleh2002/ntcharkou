@@ -98,10 +98,18 @@ export default async function AdminProjetsPage({
                     value={project.units_reserved}
                     max={project.units_planned}
                     caption={
-                      <p className="mt-1 text-xs text-encre-500">
-                        {project.units_reserved} / {project.units_planned} {t.projects.unitsTaken} ·{' '}
-                        {project.participants_confirmed} {t.projects.membersCount}
-                      </p>
+                      <>
+                        <p className="mt-1 text-xs text-encre-500">
+                          {project.units_reserved} / {project.units_planned}{' '}
+                          {t.projects.unitsTaken} · {project.participants_confirmed}{' '}
+                          {t.projects.membersCount}
+                        </p>
+                        {project.units_pending > 0 ? (
+                          <p className="mt-0.5 text-xs font-semibold text-safran-500">
+                            ⏳ {project.units_pending} {t.projects.pendingUnitsShort}
+                          </p>
+                        ) : null}
+                      </>
                     }
                   />
                 </div>
