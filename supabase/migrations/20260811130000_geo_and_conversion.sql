@@ -21,6 +21,29 @@
 create extension if not exists postgis;
 
 -- -----------------------------------------------------------------------------
+-- 0. Colonnes attendues des migrations precedentes
+-- -----------------------------------------------------------------------------
+-- Cette migration reconstruit les vues publiques, et y reprend les colonnes
+-- arabes introduites par la migration 13. Appliquee sans elle, elle echouait a
+-- mi-parcours sur « column l.title_ar does not exist » — en laissant la base
+-- dans un etat partiel.
+--
+-- On s'assure donc de leur presence. Ces `add column if not exists` ne font
+-- rien quand la migration 13 est deja passee ; ils evitent un echec quand elle
+-- a ete sautee. Ils ne remplacent pas la migration 13 pour autant : ses
+-- fonctions (dont `admin_set_project_texts`) restent a appliquer.
+
+alter table public.land_listings
+  add column if not exists title_ar        text,
+  add column if not exists description_ar  text,
+  add column if not exists observations_ar text;
+
+alter table public.projects
+  add column if not exists title_ar       text,
+  add column if not exists summary_ar     text,
+  add column if not exists description_ar text;
+
+-- -----------------------------------------------------------------------------
 -- 1. Zonages multiples
 -- -----------------------------------------------------------------------------
 
