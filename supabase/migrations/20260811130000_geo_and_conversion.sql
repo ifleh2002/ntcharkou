@@ -307,6 +307,12 @@ grant execute on function public.express_interest(uuid, text) to authenticated;
 -- 5. Vue publique des terrains : zonages, parcelle, statut de marche
 -- -----------------------------------------------------------------------------
 
+-- La fonction `lands_in_bounds` ne renvoie plus `setof public.land_listings_public`
+-- (voir plus bas) : la vue n'a donc plus de dependante et se recree librement.
+-- L'ancienne signature, elle, dependait du type de la vue et doit partir.
+drop function if exists public.lands_in_bounds(
+  double precision, double precision, double precision, double precision, integer);
+
 drop view if exists public.land_listings_public;
 
 create view public.land_listings_public
@@ -430,6 +436,12 @@ grant execute on function public.set_land_parcel(uuid, jsonb) to authenticated;
 -- -----------------------------------------------------------------------------
 -- La carte ne demande que ce qu'elle affiche : les terrains contenus dans le
 -- rectangle visible. Sans cela, chaque deplacement rapatrierait tout le pays.
+--
+-- Le type de retour est declare colonne par colonne, et non `setof
+-- land_listings_public`. Dependre du type de la vue empechait de la recreer
+-- (« cannot drop view ... because other objects depend on it ») : toute
+-- migration ulterieure touchant la vue se serait heurtee au meme mur. La
+-- fonction ne renvoie d'ailleurs que ce dont la carte a besoin.
 
 create or replace function public.lands_in_bounds(
   p_west  double precision,
@@ -438,17 +450,50 @@ create or replace function public.lands_in_bounds(
   p_north double precision,
   p_limit integer default 300
 )
-returns setof public.land_listings_public
+returns table (
+  id              uuid,
+  reference       text,
+  title           text,
+  title_ar        text,
+  market_status   public.land_market_status,
+  zoning          public.land_zoning,
+  zonings         public.land_zoning[],
+  surface_m2      numeric,
+  parcel_area_m2  numeric,
+  price_per_m2    numeric,
+  total_price     numeric,
+  has_water       boolean,
+  has_electricity boolean,
+  has_sewage      boolean,
+  parcel          jsonb,
+  map_lat         double precision,
+  map_lng         double precision
+)
 language sql
 stable
 security definer
 set search_path = public
 as $$
-  select v.*
-  from public.land_listings_public v
-  join public.land_listings l on l.id = v.id
-  where v.status = 'publie'
-    and v.market_status <> 'masque'
+  select l.id,
+         l.reference,
+         l.title,
+         nullif(btrim(coalesce(l.title_ar, '')), ''),
+         l.market_status,
+         l.zoning,
+         coalesce(l.zonings, array[l.zoning]),
+         l.surface_m2,
+         l.parcel_area_m2,
+         l.price_per_m2,
+         l.total_price,
+         l.has_water,
+         l.has_electricity,
+         l.has_sewage,
+         case when l.parcel is not null then st_asgeojson(l.parcel)::jsonb end,
+         case when l.parcel is not null then st_y(st_centroid(l.parcel)) else l.latitude end,
+         case when l.parcel is not null then st_x(st_centroid(l.parcel)) else l.longitude end
+  from public.land_listings l
+  where l.status = 'publie'
+    and l.market_status <> 'masque'
     and (
       (l.parcel is not null
         and l.parcel && st_makeenvelope(p_west, p_south, p_east, p_north, 4326))

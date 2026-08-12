@@ -19,6 +19,7 @@ export interface SchemaGap {
 }
 
 const EXPECTED: SchemaGap[] = [
+  { column: 'parcel', migration: '20260811130000_geo_and_conversion.sql' },
   { column: 'title_ar', migration: '20260811120000_arabic_content.sql' },
   { column: 'units_reserved', migration: '20260811110000_units_reserved.sql' },
   { column: 'unit_price', migration: '20260811100000_projects_admin.sql' },
@@ -32,10 +33,11 @@ export async function findSchemaGaps(): Promise<SchemaGap[]> {
     const gaps: SchemaGap[] = []
 
     for (const expected of EXPECTED) {
-      const { error } = await supabase
-        .from('projects_public')
-        .select(expected.column)
-        .limit(1)
+      // `parcel` appartient à la vue des terrains, les autres à celle des
+      // projets : sonder la mauvaise vue signalerait une migration manquante
+      // qui ne l'est pas.
+      const view = expected.column === 'parcel' ? 'land_listings_public' : 'projects_public'
+      const { error } = await supabase.from(view).select(expected.column).limit(1)
       // PostgREST refuse la requête si la colonne n'existe pas ; toute autre
       // erreur (réseau, droits) ne doit pas se déguiser en migration manquante.
       if (error && /column|does not exist|42703/i.test(`${error.message} ${error.code ?? ''}`)) {
