@@ -66,7 +66,7 @@ export default async function AdminAdhesionsPage({
       {typeof query.erreur === 'string' ? (
         <div className="mb-5">
           <Alert tone="danger" title={t.adminProjects.decisionFailed}>
-            {query.erreur}
+            <span className="whitespace-pre-line">{query.erreur}</span>
           </Alert>
         </div>
       ) : null}

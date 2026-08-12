@@ -95,7 +95,9 @@ export function AdminPricingForm({
 
       {error ? (
         <div className="mb-3">
-          <Alert tone="danger">{error}</Alert>
+          <Alert tone="danger">
+            <span className="whitespace-pre-line">{error}</span>
+          </Alert>
         </div>
       ) : null}
       {done ? (

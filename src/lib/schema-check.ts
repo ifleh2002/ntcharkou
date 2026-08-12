@@ -19,6 +19,7 @@ export interface SchemaGap {
 }
 
 const EXPECTED: SchemaGap[] = [
+  { column: 'title_ar', migration: '20260811120000_arabic_content.sql' },
   { column: 'units_reserved', migration: '20260811110000_units_reserved.sql' },
   { column: 'unit_price', migration: '20260811100000_projects_admin.sql' },
 ]

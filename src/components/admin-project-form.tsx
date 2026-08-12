@@ -95,7 +95,9 @@ export function AdminProjectForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error ? <Alert tone="danger">{error}</Alert> : null}
+      {error ? <Alert tone="danger">
+            <span className="whitespace-pre-line">{error}</span>
+          </Alert> : null}
 
       <section className="surface space-y-4 p-5">
         <h2 className="font-semibold text-encre-900">{t.adminProjects.stepLand}</h2>

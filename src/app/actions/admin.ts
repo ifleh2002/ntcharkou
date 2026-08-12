@@ -15,6 +15,28 @@ async function adminClient() {
   return { supabase, path }
 }
 
+/**
+ * Traduit l'erreur d'un appel RPC en message exploitable.
+ *
+ * PostgREST répond « Could not find the function … in the schema cache » aussi
+ * bien quand la fonction n'existe pas que lorsqu'elle vient d'être créée et que
+ * son cache de schéma n'a pas encore été rechargé. Les deux cas se corrigent
+ * différemment, et le message brut ne le dit pas : on ajoute la marche à suivre
+ * plutôt que de laisser chercher.
+ */
+function explain(error: { code?: string; message: string }): string {
+  if (error.code === 'PGRST202' || /schema cache/i.test(error.message)) {
+    return (
+      `${error.message}\n\n` +
+      'Deux causes possibles : la migration n’a pas été appliquée, ou le cache ' +
+      'de schéma de PostgREST est périmé. Appliquez les migrations manquantes ' +
+      '(le bandeau en haut de l’écran les nomme), puis exécutez dans l’éditeur ' +
+      'SQL Supabase : notify pgrst, \'reload schema\';'
+    )
+  }
+  return error.message
+}
+
 /** Décision administrative sur un terrain (section 14). */
 export async function reviewLand(formData: FormData) {
   const landId = formData.get('land_id') as string
@@ -121,7 +143,7 @@ export async function createProjectFromLand(formData: FormData): Promise<{ error
     p_description_ar: ((formData.get('description_ar') as string) || '').trim() || null,
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: explain(error) }
 
   revalidatePath(path('/admin/projets'))
   revalidatePath(path('/projets'))
@@ -152,7 +174,7 @@ export async function setProjectPricing(formData: FormData): Promise<{ error?: s
     p_market_price_per_m2: number('market_price_per_m2'),
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: explain(error) }
 
   revalidatePath(path('/admin/projets'))
   revalidatePath(path('/projets'))
@@ -182,7 +204,7 @@ export async function decideParticipation(formData: FormData) {
   // l'écran se rechargeait à l'identique et le compteur ne bougeait pas, sans
   // que rien ne l'explique. L'erreur remonte donc à l'administration.
   if (error) {
-    redirect(`${path('/admin/adhesions')}?erreur=${encodeURIComponent(error.message)}`)
+    redirect(`${path('/admin/adhesions')}?erreur=${encodeURIComponent(explain(error))}`)
   }
 
   revalidatePath(path('/admin/projets'))
@@ -210,7 +232,7 @@ export async function setProjectTexts(formData: FormData): Promise<{ error?: str
     p_description_ar: text('description_ar'),
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: explain(error) }
 
   revalidatePath(path('/admin/projets'))
   revalidatePath(path('/projets'))
