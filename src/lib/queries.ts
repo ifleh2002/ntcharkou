@@ -1,4 +1,5 @@
 import { DEFAULT_LOCALE, type Locale } from './i18n/config'
+import { normalizeCounters } from './project-counters'
 import { createSupabaseServerClient, isSupabaseConfigured } from './supabase/server'
 import type {
   City,
@@ -30,13 +31,18 @@ function localizeLand(land: LandListingPublic, locale: Locale): LandListingPubli
   }
 }
 
-function localizeProject(project: ProjectPublic, locale: Locale): ProjectPublic {
+/**
+ * Normalise une ligne de `projects_public` : nom de region/ville selon la langue,
+ * et compteurs ramenes a des nombres (cf. `project-counters.ts`).
+ */
+export function localizeProject(project: ProjectPublic, locale: Locale): ProjectPublic {
   return {
     ...project,
     region_name: pickName(locale, project.region_name, project.region_name_ar),
     city_name: project.city_name || project.city_name_ar
       ? pickName(locale, project.city_name, project.city_name_ar)
       : null,
+    ...normalizeCounters(project),
   }
 }
 

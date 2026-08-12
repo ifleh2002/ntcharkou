@@ -6,6 +6,7 @@ import { Badge, Button, Card, LinkButton, ProgressBar } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
+import { localizeProject } from '@/lib/queries'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { ProjectPublic, ProjectStatus } from '@/lib/types'
 
@@ -45,12 +46,9 @@ export default async function AdminProjetsPage({
     .limit(200)
     .returns<ProjectPublic[]>()
 
-  const projects = (data ?? []).map((project) => ({
-    ...project,
-    region_name:
-      locale === 'ar' ? (project.region_name_ar ?? project.region_name) : project.region_name,
-    city_name: locale === 'ar' ? (project.city_name_ar ?? project.city_name) : project.city_name,
-  }))
+  // Même normalisation que les lectures publiques : noms localisés et compteurs
+  // ramenés à des nombres, y compris quand une colonne manque.
+  const projects = (data ?? []).map((project) => localizeProject(project, locale))
 
   return (
     <div>

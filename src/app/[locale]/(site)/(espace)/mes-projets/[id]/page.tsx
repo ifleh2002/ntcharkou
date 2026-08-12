@@ -7,6 +7,7 @@ import { requireSession } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
 import { PROJECT_WORKFLOW } from '@/lib/labels'
+import { localizeProject } from '@/lib/queries'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { ParticipationStatus, ProjectPublic } from '@/lib/types'
 
@@ -43,12 +44,13 @@ export default async function GererProjetPage({
   const session = await requireSession(`/mes-projets/${id}`)
   const supabase = await createSupabaseServerClient()
 
-  const { data: project } = await supabase
+  const { data: row } = await supabase
     .from('projects_public')
     .select('*')
     .eq('id', id)
     .maybeSingle<ProjectPublic>()
-  if (!project) notFound()
+  if (!row) notFound()
+  const project = localizeProject(row, locale)
 
   const { data: owner } = await supabase
     .from('projects')

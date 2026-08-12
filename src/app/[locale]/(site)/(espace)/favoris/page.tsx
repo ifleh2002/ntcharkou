@@ -5,6 +5,7 @@ import { EmptyState, LinkButton, SectionTitle } from '@/components/ui'
 import { requireSession } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
+import { localizeProject } from '@/lib/queries'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { LandListingPublic, ProjectPublic } from '@/lib/types'
 
@@ -45,7 +46,9 @@ export default async function FavorisPage({ params }: { params: Promise<{ locale
   ])
 
   const landItems = (lands.data ?? []) as LandListingPublic[]
-  const projectItems = (projects.data ?? []) as ProjectPublic[]
+  const projectItems = ((projects.data ?? []) as ProjectPublic[]).map((project) =>
+    localizeProject(project, locale),
+  )
   const isEmpty = landItems.length === 0 && projectItems.length === 0
 
   return (

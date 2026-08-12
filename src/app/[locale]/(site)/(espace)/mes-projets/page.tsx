@@ -3,6 +3,7 @@ import { Badge, Card, EmptyState, LinkButton, ProgressBar, SectionTitle } from '
 import { requireSession } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
+import { localizeProject } from '@/lib/queries'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { ParticipationStatus, ProjectPublic } from '@/lib/types'
 
@@ -47,9 +48,9 @@ export default async function MesProjetsPage({
   const participationByProject = new Map(
     (participations.data ?? []).map((row) => [row.project_id, row]),
   )
-  const myProjects = (created.data ?? []).filter((project) =>
-    participationByProject.has(project.id),
-  )
+  const myProjects = (created.data ?? [])
+    .filter((project) => participationByProject.has(project.id))
+    .map((project) => localizeProject(project, locale))
 
   return (
     <div>
