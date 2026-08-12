@@ -10,6 +10,7 @@ import { createFormatter } from '@/lib/format'
 import { ZONING_ORDER } from '@/lib/labels'
 import { LAND_DOCUMENTS_BUCKET, LAND_IMAGES_BUCKET } from '@/lib/storage'
 import type { City, LegalStatus, OwnerKind, Profile, Region } from '@/lib/types'
+import { BilingualField } from './bilingual-field'
 import { CityOptions } from './city-options'
 import { Alert, Button, Checkbox, Field, cx } from './ui'
 
@@ -381,18 +382,14 @@ export function LandForm({
 
           {/* ============ Étape 3 : caractéristiques ============ */}
           <section data-step="2" hidden={step !== 2} className="space-y-4">
-            <Field
+            <BilingualField
+              name="title"
               label={t.landForm.listingTitle}
-              htmlFor="title"
+              labelAr={t.landForm.listingTitleAr}
               hint={t.landForm.listingTitleHint}
-            >
-              <input
-                id="title"
-                name="title"
-                className="champ"
-                placeholder={t.landForm.listingTitlePlaceholder}
-              />
-            </Field>
+              hintAr={t.landForm.arabicHint}
+              placeholder={t.landForm.listingTitlePlaceholder}
+            />
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t.lands.zoning} htmlFor="zoning" required>
@@ -466,13 +463,21 @@ export function LandForm({
               <input id="declared_units" name="declared_units" type="number" min="1" className="champ" />
             </Field>
 
-            <Field label={t.landForm.description} htmlFor="description">
-              <textarea id="description" name="description" rows={5} className="champ" />
-            </Field>
+            <BilingualField
+              name="description"
+              label={t.landForm.description}
+              labelAr={t.landForm.descriptionAr}
+              hintAr={t.landForm.arabicHint}
+              rows={5}
+            />
 
-            <Field label={t.landForm.observations} htmlFor="observations">
-              <textarea id="observations" name="observations" rows={3} className="champ" />
-            </Field>
+            <BilingualField
+              name="observations"
+              label={t.landForm.observations}
+              labelAr={t.landForm.observationsAr}
+              hintAr={t.landForm.arabicHint}
+              rows={3}
+            />
           </section>
 
           {/* ============ Étape 4 : prix ============ */}

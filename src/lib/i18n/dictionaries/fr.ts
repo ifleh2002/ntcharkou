@@ -499,6 +499,10 @@ export const fr = {
     errSave: 'Enregistrement impossible.',
     errUpload:
       'Le terrain a bien été enregistré, mais certains fichiers n’ont pas pu être envoyés. Vous pourrez les ajouter depuis la fiche du terrain.',
+    listingTitleAr: 'Titre de l’annonce (arabe)',
+    descriptionAr: 'Description (arabe)',
+    observationsAr: 'Observations (arabe)',
+    arabicHint: 'Facultatif. Sans traduction, la version française s’affiche.',
   },
 
   requests: {
@@ -861,6 +865,13 @@ export const fr = {
     schemaGapColumn: 'colonne attendue :',
     decisionSaved: 'Décision enregistrée. Le candidat a été notifié.',
     decisionFailed: 'La décision n’a pas pu être enregistrée',
+    projectTitleAr: 'Intitulé du projet (arabe)',
+    summaryAr: 'Résumé (arabe)',
+    descriptionAr: 'Description (arabe)',
+    editTexts: 'Modifier les textes',
+    textsSaved: 'Textes enregistrés.',
+    arabicPresent: 'version arabe renseignée',
+    arabicMissing: 'Pas de version arabe',
   },
 
   admin: {

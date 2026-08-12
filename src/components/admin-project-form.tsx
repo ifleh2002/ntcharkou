@@ -7,6 +7,7 @@ import { createFormatter } from '@/lib/format'
 import type { Dictionary, Locale } from '@/lib/i18n'
 import { localePath } from '@/lib/i18n/config'
 import { PROPERTY_NEED_ORDER } from '@/lib/labels'
+import { BilingualField } from './bilingual-field'
 import { Alert, Button, Checkbox, Field } from './ui'
 
 export interface ProjectableLand {
@@ -146,24 +147,29 @@ export function AdminProjectForm({
       <section className="surface space-y-4 p-5">
         <h2 className="font-semibold text-encre-900">{t.adminProjects.stepProject}</h2>
 
-        <Field label={t.adminProjects.projectTitle} htmlFor="title" required>
-          <input
-            id="title"
-            name="title"
-            required
-            className="champ"
-            defaultValue=""
-            placeholder={t.adminProjects.titlePlaceholder}
-          />
-        </Field>
+        <BilingualField
+          name="title"
+          label={t.adminProjects.projectTitle}
+          labelAr={t.adminProjects.projectTitleAr}
+          hintAr={t.landForm.arabicHint}
+          required
+          placeholder={t.adminProjects.titlePlaceholder}
+        />
 
-        <Field label={t.adminProjects.summary} htmlFor="summary">
-          <input id="summary" name="summary" className="champ" />
-        </Field>
+        <BilingualField
+          name="summary"
+          label={t.adminProjects.summary}
+          labelAr={t.adminProjects.summaryAr}
+          hintAr={t.landForm.arabicHint}
+        />
 
-        <Field label={t.adminProjects.description} htmlFor="description">
-          <textarea id="description" name="description" rows={3} className="champ" />
-        </Field>
+        <BilingualField
+          name="description"
+          label={t.adminProjects.description}
+          labelAr={t.adminProjects.descriptionAr}
+          hintAr={t.landForm.arabicHint}
+          rows={3}
+        />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t.projects.typology} htmlFor="property_need" required>

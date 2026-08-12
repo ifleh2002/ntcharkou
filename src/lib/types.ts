@@ -153,7 +153,10 @@ export interface LandListingPublic {
   id: string
   reference: string | null
   title: string
+  /** Graphie arabe du contenu rédigé ; vide, le français sert de repli. */
+  title_ar: string | null
   description: string | null
+  description_ar: string | null
   region_code: string
   region_name: string
   region_name_ar: string | null
@@ -171,6 +174,7 @@ export interface LandListingPublic {
   road_width_m: number | null
   legal_status: LegalStatus | null
   observations: string | null
+  observations_ar: string | null
   price_per_m2: number | null
   total_price: number | null
   price_negotiable: boolean
@@ -220,8 +224,12 @@ export interface ProjectPublic {
   id: string
   reference: string | null
   title: string
+  /** Graphie arabe du contenu rédigé ; vide, le français sert de repli. */
+  title_ar: string | null
   summary: string | null
+  summary_ar: string | null
   description: string | null
+  description_ar: string | null
   region_code: string
   region_name: string
   region_name_ar: string | null

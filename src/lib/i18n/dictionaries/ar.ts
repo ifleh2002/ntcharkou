@@ -493,6 +493,10 @@ export const ar: Dictionary = {
     errSave: 'تعذّر الحفظ.',
     errUpload:
       'تم حفظ الأرض، لكن تعذّر إرسال بعض الملفات. يمكنك إضافتها لاحقاً من بطاقة الأرض.',
+    listingTitleAr: 'عنوان الإعلان (بالعربية)',
+    descriptionAr: 'الوصف (بالعربية)',
+    observationsAr: 'ملاحظات (بالعربية)',
+    arabicHint: 'اختياري. بدون ترجمة، تُعرض النسخة الفرنسية.',
   },
 
   requests: {
@@ -847,6 +851,13 @@ export const ar: Dictionary = {
     schemaGapColumn: 'العمود المنتظر:',
     decisionSaved: 'تم تسجيل القرار، وأُشعِر المترشح.',
     decisionFailed: 'تعذّر تسجيل القرار',
+    projectTitleAr: 'عنوان المشروع (بالعربية)',
+    summaryAr: 'ملخص (بالعربية)',
+    descriptionAr: 'الوصف (بالعربية)',
+    editTexts: 'تعديل النصوص',
+    textsSaved: 'تم حفظ النصوص.',
+    arabicPresent: 'النسخة العربية متوفرة',
+    arabicMissing: 'لا توجد نسخة عربية',
   },
 
   admin: {

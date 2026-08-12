@@ -115,6 +115,10 @@ export async function createProjectFromLand(formData: FormData): Promise<{ error
     p_market_price_per_m2: number('market_price_per_m2'),
     p_restricted_to_body: ((formData.get('restricted_to_body') as string) || '') || null,
     p_open: formData.get('open') === '1',
+    // Traductions facultatives : vides, le français sert de repli à l'affichage.
+    p_title_ar: ((formData.get('title_ar') as string) || '').trim() || null,
+    p_summary_ar: ((formData.get('summary_ar') as string) || '').trim() || null,
+    p_description_ar: ((formData.get('description_ar') as string) || '').trim() || null,
   })
 
   if (error) return { error: error.message }
@@ -185,4 +189,31 @@ export async function decideParticipation(formData: FormData) {
   revalidatePath(path('/admin/adhesions'))
   revalidatePath(path('/projets'))
   redirect(`${path('/admin/adhesions')}?traite=1`)
+}
+
+/** Révision des textes d'un projet, dans les deux langues. */
+export async function setProjectTexts(formData: FormData): Promise<{ error?: string }> {
+  const { supabase, path } = await adminClient()
+
+  const text = (key: string) => ((formData.get(key) as string) || '').trim() || null
+  const title = ((formData.get('title') as string) || '').trim()
+  if (!title) return { error: 'L’intitulé est obligatoire.' }
+
+  const projectId = formData.get('project_id') as string
+  const { error } = await supabase.rpc('admin_set_project_texts', {
+    p_project: projectId,
+    p_title: title,
+    p_title_ar: text('title_ar'),
+    p_summary: text('summary'),
+    p_summary_ar: text('summary_ar'),
+    p_description: text('description'),
+    p_description_ar: text('description_ar'),
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(path('/admin/projets'))
+  revalidatePath(path('/projets'))
+  revalidatePath(path(`/projets/${projectId}`))
+  return {}
 }

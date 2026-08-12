@@ -21,6 +21,25 @@ function pickName(locale: Locale, fr: string | null, ar: string | null): string 
   return fr || ar || ''
 }
 
+/**
+ * Contenu rédigé par un utilisateur : on affiche la graphie de la langue en
+ * cours, et le français sert de repli. Une annonce sans traduction reste ainsi
+ * lisible en arabe plutôt que d'apparaître vide.
+ */
+function pickText(locale: Locale, fr: string | null, ar: string | null): string | null {
+  // Une traduction ne contenant que des espaces doit compter comme absente,
+  // sinon elle l'emporte sur le français et le champ s'affiche vide. La vue
+  // applique deja `nullif(btrim(...), '')`, mais l'application ne doit pas en
+  // dependre : elle lit aussi des lignes ecrites ailleurs.
+  const blank = (value: string | null) => !value || value.trim() === ''
+  const first = locale === 'ar' ? ar : fr
+  const fallback = locale === 'ar' ? fr : ar
+
+  if (!blank(first)) return first
+  if (!blank(fallback)) return fallback
+  return null
+}
+
 function localizeLand(land: LandListingPublic, locale: Locale): LandListingPublic {
   return {
     ...land,
@@ -28,6 +47,9 @@ function localizeLand(land: LandListingPublic, locale: Locale): LandListingPubli
     city_name: land.city_name || land.city_name_ar
       ? pickName(locale, land.city_name, land.city_name_ar)
       : null,
+    title: pickText(locale, land.title, land.title_ar) ?? land.title,
+    description: pickText(locale, land.description, land.description_ar),
+    observations: pickText(locale, land.observations, land.observations_ar),
   }
 }
 
@@ -42,6 +64,9 @@ export function localizeProject(project: ProjectPublic, locale: Locale): Project
     city_name: project.city_name || project.city_name_ar
       ? pickName(locale, project.city_name, project.city_name_ar)
       : null,
+    title: pickText(locale, project.title, project.title_ar) ?? project.title,
+    summary: pickText(locale, project.summary, project.summary_ar),
+    description: pickText(locale, project.description, project.description_ar),
     ...normalizeCounters(project),
   }
 }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { reviewProject } from '@/app/actions/admin'
 import { AdminPricingForm } from '@/components/admin-pricing-form'
+import { AdminTextsForm } from '@/components/admin-texts-form'
 import { Badge, Button, Card, LinkButton, ProgressBar } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
@@ -121,6 +122,7 @@ export default async function AdminProjetsPage({
                 </div>
 
                 <AdminPricingForm project={project} t={t} locale={locale} />
+                <AdminTextsForm project={project} t={t} />
                 {project.participants_pending > 0 ? (
                   <p className="mt-1 text-xs text-encre-400">
                     {project.participants_pending} {t.admin.pendingCount}

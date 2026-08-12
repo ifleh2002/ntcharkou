@@ -41,7 +41,9 @@ const landSchema = z.object({
 
   // Etape 3 — caracteristiques
   title: z.string().trim().optional().default(''),
+  title_ar: z.string().trim().optional().default(''),
   description: z.string().trim().optional().default(''),
+  description_ar: z.string().trim().optional().default(''),
   zoning: z.enum([
     'residentiel',
     'r2',
@@ -68,6 +70,7 @@ const landSchema = z.object({
   land_title_ref: z.string().trim().optional().default(''),
   legal_status: z.string().trim().optional().default(''),
   observations: z.string().trim().optional().default(''),
+  observations_ar: z.string().trim().optional().default(''),
   declared_units: optionalNumber,
 
   // Etape 4 — prix
@@ -146,7 +149,11 @@ export async function saveLand(formData: FormData): Promise<LandActionResult> {
     .insert({
       owner_id: user.id,
       title,
+      // La traduction reste facultative : vide, le français sert de repli à
+      // l'affichage plutôt que de laisser un titre absent en arabe.
+      title_ar: values.title_ar || null,
       description: values.description || null,
+      description_ar: values.description_ar || null,
       region_code: values.region_code,
       city_id: cityId,
       city_other: cityId ? null : values.city_other || null,
@@ -163,6 +170,7 @@ export async function saveLand(formData: FormData): Promise<LandActionResult> {
       land_title_ref: values.land_title_ref || null,
       legal_status: values.legal_status || null,
       observations: values.observations || null,
+      observations_ar: values.observations_ar || null,
       declared_units: values.declared_units,
       price_per_m2: values.price_per_m2,
       price_negotiable: checked(values.price_negotiable),
