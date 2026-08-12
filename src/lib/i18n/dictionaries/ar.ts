@@ -1070,6 +1070,14 @@ export const ar: Dictionary = {
     parcelArea: 'المساحة المقاسة من الرسم',
     parcelPerimeter: 'المحيط',
     marketStatus: 'التوفر',
+    errorTitle: 'تعذّر تحميل الخريطة',
+    errorHint:
+      'إذا طُبِّق ترحيل للتو، أعد تحميل ذاكرة المخطط: نفّذ « notify pgrst, \'reload schema\'; » في محرر SQL في Supabase.',
+    noCoordinatesTitle: 'لم تُحدَّد بعدُ مواقع الأراضي',
+    noCoordinatesBody:
+      'توجد أراضٍ منشورة، لكن لا يحمل أي منها محيطاً مرسوماً ولا إحداثيات. ارسم القطعة من « أراضيي » لتظهر هنا.',
+    unplacedCount: 'أرض منشورة لم تُحدَّد بعدُ على الخريطة.',
+    drawThem: 'رسم قطعها',
   },
 
   enums: {

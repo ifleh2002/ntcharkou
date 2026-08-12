@@ -1087,6 +1087,14 @@ export const fr = {
     parcelArea: 'Surface mesurée sur le tracé',
     parcelPerimeter: 'Périmètre',
     marketStatus: 'Disponibilité',
+    errorTitle: 'La carte n’a pas pu être chargée',
+    errorHint:
+      'Si une migration vient d’être appliquée, rechargez le cache de schéma : exécutez « notify pgrst, \'reload schema\'; » dans l’éditeur SQL Supabase.',
+    noCoordinatesTitle: 'Aucun terrain n’est encore situé',
+    noCoordinatesBody:
+      'Des terrains sont publiés, mais aucun n’a de contour tracé ni de coordonnées. Tracez la parcelle depuis « Mes terrains » pour la voir apparaître ici.',
+    unplacedCount: 'terrain(s) publié(s) ne sont pas encore situés sur la carte.',
+    drawThem: 'Tracer leur parcelle',
   },
 
   enums: {
