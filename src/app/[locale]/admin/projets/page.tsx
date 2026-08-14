@@ -136,7 +136,7 @@ export default async function AdminProjetsPage({
                     <input type="hidden" name="project_id" value={project.id} />
                     <input type="hidden" name="status" value={next.status} />
                     <Button type="submit" variant="collectif" size="sm" className="w-full">
-                      {t.admin[next.labelKey as keyof typeof t.admin]}
+                      {String(t.admin[next.labelKey as keyof typeof t.admin] ?? next.labelKey)}
                     </Button>
                   </form>
                 ) : null}

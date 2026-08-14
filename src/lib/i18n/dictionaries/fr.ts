@@ -1057,6 +1057,24 @@ export const fr = {
 
     noData: 'Aucune donnée',
     noMatch: 'Aucune correspondance',
+    queueTitle: 'À traiter',
+    queueNothingPending: 'Rien n’attend de décision.',
+    queueDays: 'j',
+    queueLabels: {
+      terrains_a_valider: 'Terrains à valider',
+      projets_a_instruire: 'Projets à instruire',
+      adhesions_en_attente: 'Demandes d’adhésion',
+      signalements_ouverts: 'Signalements ouverts',
+    },
+    completenessTitle: 'Complétude',
+    completenessLead: 'Publié, mais incomplet — rien de tout cela ne remonte comme une erreur.',
+    completenessAllGood: 'Tout est complet.',
+    completenessLabels: {
+      terrains_sans_contour: 'Terrains sans contour tracé',
+      terrains_sans_photo: 'Terrains sans photo',
+      projets_sans_grille: 'Projets sans grille tarifaire',
+      contenus_sans_arabe: 'Projets sans version arabe',
+    },
   },
 
   score: {

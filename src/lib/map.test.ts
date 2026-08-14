@@ -116,10 +116,11 @@ test('les identifiants de fonds sont uniques et le défaut existe', () => {
   DEFAULT_OVERLAYS.forEach((id) => assert.ok(OVERLAYS.some((o) => o.id === id)))
 })
 
-test('la vue initiale ne superpose aucun calque traçant des frontières', () => {
-  // Le calque de libellés disponible sans clé d'API porte aussi les limites
-  // administratives : il ne doit pas être actif d'emblée.
-  assert.ok(!DEFAULT_OVERLAYS.includes('places'))
+test('la vue initiale est satellite avec les noms de villes', () => {
+  // Une image satellite sans libellés est illisible : on ne sait pas où l'on
+  // est. Le fond, lui, ne trace aucune frontière.
+  assert.equal(DEFAULT_LAYER, 'satellite')
+  assert.deepEqual(DEFAULT_OVERLAYS, ['places'])
 })
 
 test('un identifiant inconnu retombe sur un fond valide', () => {

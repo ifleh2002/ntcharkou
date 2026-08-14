@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ActionQueue, CompletenessPanel, type CompletenessRow, type QueueRow } from '@/components/admin-queue'
 import { BarList, LineChart, SegmentBar } from '@/components/charts'
 import { Card, LinkButton, StatCard } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
@@ -60,6 +61,14 @@ export default async function AdminDashboardPage({
   await requireAdmin()
   const supabase = await createSupabaseServerClient()
 
+  // Ce qui attend une décision, et ce qui est publié mais incomplet.
+  const [queue, completeness] = await Promise.all([
+    supabase.rpc('admin_action_queue'),
+    supabase.rpc('admin_completeness'),
+  ])
+  const queueRows = (queue.data ?? []) as QueueRow[]
+  const completenessRows = (completeness.data ?? []) as CompletenessRow[]
+
   // Mois abrégés dans la langue courante.
   const monthFormat = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-MA' : 'fr-MA', {
     month: 'short',
@@ -106,6 +115,11 @@ export default async function AdminDashboardPage({
   return (
     <div>
       <header className="mb-8 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-6 grid gap-4 lg:grid-cols-2">
+        <ActionQueue rows={queueRows} t={t} path={path} />
+        <CompletenessPanel rows={completenessRows} t={t} path={path} />
+      </div>
+
         <div>
           <h1 className="text-2xl font-bold text-encre-900">{t.admin.dashboardTitle}</h1>
           <p className="mt-1 text-sm text-encre-500">

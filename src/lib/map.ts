@@ -197,13 +197,14 @@ export const OVERLAYS: MapOverlay[] = [
 export const DEFAULT_LAYER = 'satellite'
 
 /**
- * Aucun calque actif au premier affichage.
+ * Vue initiale : imagerie satellite avec les noms de villes.
  *
- * Le seul calque de libelles disponible sans clé d'API trace aussi les limites
- * administratives. La vue initiale reste donc de l'imagerie nue, conformement a
- * la demande ; les noms de villes s'ajoutent d'un clic pour qui veut se reperer.
+ * Sans libelles, une image satellite du Maroc est difficile a lire — on ne sait
+ * pas ou l'on est. Le calque de reference qui les porte trace aussi, en
+ * contrepartie, les limites administratives ; le fond lui-meme n'en trace
+ * aucune, et le calque se retire d'un clic depuis le menu.
  */
-export const DEFAULT_OVERLAYS: string[] = []
+export const DEFAULT_OVERLAYS: string[] = ['places']
 
 export function findLayer(id: string): MapLayer {
   return BASE_LAYERS.find((layer) => layer.id === id) ?? BASE_LAYERS[0]

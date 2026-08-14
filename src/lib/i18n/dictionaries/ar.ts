@@ -1040,6 +1040,24 @@ export const ar: Dictionary = {
 
     noData: 'لا توجد معطيات',
     noMatch: 'لا يوجد توافق',
+    queueTitle: 'قيد المعالجة',
+    queueNothingPending: 'لا شيء ينتظر قراراً.',
+    queueDays: 'ي',
+    queueLabels: {
+      terrains_a_valider: 'أراضٍ للمصادقة',
+      projets_a_instruire: 'مشاريع قيد الدراسة',
+      adhesions_en_attente: 'طلبات الانخراط',
+      signalements_ouverts: 'إبلاغات مفتوحة',
+    },
+    completenessTitle: 'اكتمال البيانات',
+    completenessLead: 'منشور لكن ناقص — لا يظهر أي من هذا كخطأ.',
+    completenessAllGood: 'كل شيء مكتمل.',
+    completenessLabels: {
+      terrains_sans_contour: 'أراضٍ بدون محيط مرسوم',
+      terrains_sans_photo: 'أراضٍ بدون صورة',
+      projets_sans_grille: 'مشاريع بدون جدول أثمنة',
+      contenus_sans_arabe: 'مشاريع بدون نسخة عربية',
+    },
   },
 
   score: {
