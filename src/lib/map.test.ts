@@ -4,7 +4,17 @@
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { approximateArea, marketColor, polygonToVertices, verticesToPolygon } from './map.ts'
+import {
+  BASE_LAYERS,
+  DEFAULT_LAYER,
+  DEFAULT_OVERLAYS,
+  OVERLAYS,
+  approximateArea,
+  findLayer,
+  marketColor,
+  polygonToVertices,
+  verticesToPolygon,
+} from './map.ts'
 
 // Rectangle d'environ 100 m sur 100 m près de Casablanca, en [lat, lng].
 const CARRE: [number, number][] = [
@@ -78,4 +88,40 @@ test('chaque statut de marché a sa couleur, et l’inconnu ne casse rien', () =
   couleurs.forEach((c) => assert.match(c, /^#[0-9a-f]{6}$/i))
   assert.match(marketColor(null), /^#[0-9a-f]{6}$/i)
   assert.match(marketColor('inconnu'), /^#[0-9a-f]{6}$/i)
+})
+
+test('le fond par défaut ne trace aucune frontière politique', () => {
+  // C'est la demande explicite : le fond initial est de l'imagerie, pas une
+  // carte politique. Un changement de défaut doit casser ce test.
+  const defaut = findLayer(DEFAULT_LAYER)
+  assert.equal(defaut.id, 'satellite')
+  assert.match(defaut.url, /World_Imagery/)
+})
+
+test('chaque fond et calque est utilisable sans clé d’API', () => {
+  for (const layer of [...BASE_LAYERS, ...OVERLAYS]) {
+    assert.match(layer.url, /^https:\/\//, `${layer.id} doit être servi en HTTPS`)
+    // Une URL réclamant une clé nous rendrait dépendants d'un compte à
+    // provisionner, et la carte tomberait le jour où le quota est atteint.
+    assert.doesNotMatch(layer.url, /api_key|apikey|access_token|\{key\}/i, `${layer.id}`)
+    assert.ok(layer.attribution.length > 0, `${layer.id} doit citer sa source`)
+    assert.ok(layer.maxZoom >= 12, `${layer.id} doit permettre de zoomer utilement`)
+  }
+})
+
+test('les identifiants de fonds sont uniques et le défaut existe', () => {
+  const ids = BASE_LAYERS.map((l) => l.id)
+  assert.equal(new Set(ids).size, ids.length)
+  assert.ok(ids.includes(DEFAULT_LAYER))
+  DEFAULT_OVERLAYS.forEach((id) => assert.ok(OVERLAYS.some((o) => o.id === id)))
+})
+
+test('la vue initiale ne superpose aucun calque traçant des frontières', () => {
+  // Le calque de libellés disponible sans clé d'API porte aussi les limites
+  // administratives : il ne doit pas être actif d'emblée.
+  assert.ok(!DEFAULT_OVERLAYS.includes('places'))
+})
+
+test('un identifiant inconnu retombe sur un fond valide', () => {
+  assert.ok(findLayer('inexistant').url.startsWith('https://'))
 })

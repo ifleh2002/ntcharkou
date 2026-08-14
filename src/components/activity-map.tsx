@@ -5,6 +5,7 @@ import type { Map as LeafletMap, Layer } from 'leaflet'
 import { useEffect, useRef, useState } from 'react'
 import type { Dictionary } from '@/lib/i18n'
 import { MOROCCO_CENTER } from '@/lib/map'
+import { LayerControl, MapCounters, useMapLayers } from './map-controls'
 
 export interface RegionActivity {
   code: string
@@ -55,6 +56,12 @@ export function ActivityMap({
   const map = useRef<LeafletMap | null>(null)
   const layers = useRef<Layer[]>([])
   const [ready, setReady] = useState(false)
+  const { base, setBase, overlays, setOverlays } = useMapLayers(map, ready)
+
+  // Totaux repris des mêmes données que les pastilles : impossible qu'ils
+  // divergent de ce que la carte montre.
+  const totalLands = regions.reduce((sum, region) => sum + region.lands, 0)
+  const totalProjects = regions.reduce((sum, region) => sum + region.projects, 0)
 
   useEffect(() => {
     let cancelled = false
@@ -69,11 +76,6 @@ export function ActivityMap({
         scrollWheelZoom: false, // sinon la page ne défile plus au survol
         zoomControl: true,
       })
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 12,
-      }).addTo(map.current)
 
       setReady(true)
     }
@@ -152,13 +154,23 @@ export function ActivityMap({
 
   return (
     <div>
-      <div
-        ref={container}
-        style={{ height }}
-        className="w-full overflow-hidden rounded-xl border border-sable-300 bg-sable-200"
-        role="application"
-        aria-label={t.home.mapTitle}
-      />
+      <div className="relative">
+        <div
+          ref={container}
+          style={{ height }}
+          className="w-full overflow-hidden rounded-xl border border-sable-300 bg-sable-200"
+          role="application"
+          aria-label={t.home.mapTitle}
+        />
+        <MapCounters lands={totalLands} projects={totalProjects} t={t} />
+        <LayerControl
+          base={base}
+          setBase={setBase}
+          overlays={overlays}
+          setOverlays={setOverlays}
+          t={t}
+        />
+      </div>
 
       {/* Sans légende, deux couleurs de pastilles ne veulent rien dire. */}
       <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2">

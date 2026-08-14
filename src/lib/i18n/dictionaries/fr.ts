@@ -1100,6 +1100,17 @@ export const fr = {
       'Des terrains sont publiés, mais aucun n’a de contour tracé ni de coordonnées. Tracez la parcelle depuis « Mes terrains » pour la voir apparaître ici.',
     unplacedCount: 'terrain(s) publié(s) ne sont pas encore situés sur la carte.',
     drawThem: 'Tracer leur parcelle',
+    layersMenu: 'Couches',
+    background: 'Fond de carte',
+    overlays: 'Calques',
+    layers: {
+      satellite: 'Vue satellite',
+      relief: 'Relief',
+      topo: 'Topographique',
+      plan: 'Plan',
+      roads: '🛣️ Routes',
+      places: '📍 Noms des villes',
+    },
   },
 
   enums: {

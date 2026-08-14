@@ -12,6 +12,7 @@ import {
   marketColor,
   polygonToVertices,
 } from '@/lib/map'
+import { LayerControl, MapCounters, useMapLayers } from './map-controls'
 
 export interface MapLand {
   id: string
@@ -48,17 +49,21 @@ export function LandMap({
   locale,
   height = 520,
   onSelect,
+  openProjects = 0,
 }: {
   lands: MapLand[]
   t: Dictionary
   locale: string
   height?: number
   onSelect?: (id: string) => void
+  /** Projets ouverts, affichés à côté du nombre de terrains. */
+  openProjects?: number
 }) {
   const container = useRef<HTMLDivElement>(null)
   const map = useRef<LeafletMap | null>(null)
   const shapes = useRef<LeafletPolygon[]>([])
   const [ready, setReady] = useState(false)
+  const { base, setBase, overlays, setOverlays } = useMapLayers(map, ready)
 
   useEffect(() => {
     let cancelled = false
@@ -72,11 +77,6 @@ export function LandMap({
         zoom: MOROCCO_ZOOM,
         scrollWheelZoom: false, // sinon la page ne défile plus au survol
       })
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 19,
-      }).addTo(map.current)
 
       setReady(true)
     }
@@ -141,13 +141,23 @@ export function LandMap({
 
   return (
     <div>
-      <div
-        ref={container}
-        style={{ height }}
-        className="w-full overflow-hidden rounded-xl border border-sable-300 bg-sable-200"
-        role="application"
-        aria-label={t.map.title}
-      />
+      <div className="relative">
+        <div
+          ref={container}
+          style={{ height }}
+          className="w-full overflow-hidden rounded-xl border border-sable-300 bg-sable-200"
+          role="application"
+          aria-label={t.map.title}
+        />
+        <MapCounters lands={lands.length} projects={openProjects} t={t} />
+        <LayerControl
+          base={base}
+          setBase={setBase}
+          overlays={overlays}
+          setOverlays={setOverlays}
+          t={t}
+        />
+      </div>
       <MapLegend t={t} />
     </div>
   )

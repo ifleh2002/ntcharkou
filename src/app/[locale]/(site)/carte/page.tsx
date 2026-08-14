@@ -32,6 +32,7 @@ export default async function CartePage({
   const { t, path } = translation(locale)
 
   let lands: MapLand[] = []
+  let openProjects = 0
   let queryError: string | null = null
 
   if (isSupabaseConfigured()) {
@@ -42,6 +43,13 @@ export default async function CartePage({
       .eq('status', 'publie')
       .neq('market_status', 'masque')
       .limit(500)
+
+    // Compteur affiché sur la carte, à côté du nombre de terrains.
+    const { count } = await supabase
+      .from('projects_public')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['ouvert', 'groupe_constitue', 'en_preparation', 'realise'])
+    openProjects = count ?? 0
 
     // Une requête en échec ne doit pas se déguiser en « aucun terrain » : les
     // deux se ressemblent à l'écran, mais l'une se corrige et l'autre non.
@@ -85,7 +93,13 @@ export default async function CartePage({
       ) : null}
 
       {placeable.length > 0 ? (
-        <LandMap lands={placeable} t={t} locale={locale} height={600} />
+        <LandMap
+          lands={placeable}
+          t={t}
+          locale={locale}
+          height={600}
+          openProjects={openProjects}
+        />
       ) : queryError ? null : (
         <EmptyState
           icon="🗺️"
