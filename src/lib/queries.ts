@@ -1,4 +1,5 @@
 import { DEFAULT_LOCALE, type Locale } from './i18n/config'
+import type { RegionActivity } from '@/components/activity-map'
 import { normalizeCounters } from './project-counters'
 import { createSupabaseServerClient, isSupabaseConfigured } from './supabase/server'
 import type {
@@ -317,4 +318,26 @@ export async function getPublicStats(): Promise<PublicStats> {
     },
     { lands: 0, projects: 0, regions: 0, units: 0 },
   )
+}
+
+/**
+ * Activité par région, pour la carte d'accueil : terrains proposés et projets
+ * ouverts, comptés séparément car ils ne disent pas la même chose.
+ *
+ * Le décompte passe par une fonction SECURITY DEFINER : un visiteur anonyme ne
+ * « voit » pas toutes les lignes à travers la RLS, un comptage direct
+ * sous-estimerait donc les totaux.
+ */
+export async function getRegionActivity(): Promise<RegionActivity[]> {
+  return safe(async () => {
+    const supabase = await createSupabaseServerClient()
+    const { data } = await supabase.rpc('region_activity')
+    return ((data ?? []) as RegionActivity[]).map((region) => ({
+      ...region,
+      latitude: Number(region.latitude),
+      longitude: Number(region.longitude),
+      lands: Number(region.lands),
+      projects: Number(region.projects),
+    }))
+  }, [])
 }

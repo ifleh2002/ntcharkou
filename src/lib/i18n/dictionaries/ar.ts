@@ -138,6 +138,10 @@ export const ar: Dictionary = {
     groupExampleUnits: 'الوحدات المبرمجة: 20',
     groupExampleConfirmed: 'المشاركون المؤكدون: 14 / 20',
     groupExampleProgress: '70 ٪ من المجموعة مكتملة',
+    mapTitle: 'النشاط جهةً جهةً',
+    mapLead: 'الأراضي المعروضة والمشاريع المفتوحة، حيث توجد. انقر على دائرة لمعرفة التفاصيل.',
+    mapLands: 'أرض معروضة',
+    mapProjects: 'مشروع مفتوح',
   },
 
   howItWorks: {

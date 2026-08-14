@@ -133,6 +133,11 @@ export const fr = {
     groupExampleUnits: 'Unités prévues : 20',
     groupExampleConfirmed: 'Participants confirmés : 14 / 20',
     groupExampleProgress: '70 % du groupe constitué',
+    mapTitle: 'L’activité région par région',
+    mapLead:
+      'Les terrains proposés et les projets ouverts, là où ils se trouvent. Cliquez sur une pastille pour en connaître le détail.',
+    mapLands: 'terrains proposés',
+    mapProjects: 'projets ouverts',
   },
 
   howItWorks: {

@@ -241,3 +241,46 @@ select set_config('request.jwt.claim.sub', '', true);
 commit;
 
 \echo '=== Carte et conversion : contrôles passés ==='
+
+-- =============================================================================
+-- Activité par région : la carte d'accueil
+-- =============================================================================
+
+begin;
+set local client_min_messages = warning;
+
+do $$
+declare
+  n integer;
+  casa record;
+begin
+  select count(*) into n from public.region_activity();
+  if n <> 12 then
+    raise exception 'Les 12 régions doivent porter un repère d''affichage, obtenu %', n;
+  end if;
+
+  -- Les repères doivent tomber sur le Maroc : une longitude positive placerait
+  -- la région en Asie sans que rien ne le signale.
+  if exists (
+    select 1 from public.region_activity()
+    where latitude not between 20 and 37 or longitude not between -18 and 0
+  ) then
+    raise exception 'Un repère de région tombe hors du Maroc';
+  end if;
+
+  select * into casa from public.region_activity() where code = 'casablanca-settat';
+
+  -- Terrains et projets sont deux comptes distincts : ils ne disent pas la
+  -- même chose et ne doivent pas être confondus.
+  if casa.lands is null or casa.projects is null then
+    raise exception 'Les deux compteurs doivent être renseignés';
+  end if;
+  if casa.lands < 1 then
+    raise exception 'Casablanca-Settat porte au moins un terrain publié dans le jeu de test';
+  end if;
+end;
+$$;
+
+commit;
+
+\echo '=== Activité par région : contrôles passés ==='

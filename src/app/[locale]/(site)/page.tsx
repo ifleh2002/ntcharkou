@@ -1,10 +1,12 @@
 import Link from 'next/link'
+import { ActivityMap } from '@/components/activity-map'
 import { LandCard } from '@/components/land-card'
 import { ProjectCard } from '@/components/project-card'
 import { SearchBar } from '@/components/search-bar'
 import { Card, LinkButton, SectionTitle } from '@/components/ui'
+import { VideoEmbed } from '@/components/video'
 import { resolveLocale, translation } from '@/lib/i18n/server'
-import { getPublicStats, getRegions, listProjects, searchLands } from '@/lib/queries'
+import { getPublicStats, getRegionActivity, getRegions, listProjects, searchLands } from '@/lib/queries'
 
 const STEP_ICONS = ['📝', '🛡️', '🎯', '🏢']
 
@@ -14,11 +16,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tr = translation(locale)
   const { t, f, path } = tr
 
-  const [stats, regions, lands, projects] = await Promise.all([
+  const [stats, regions, lands, projects, activity] = await Promise.all([
     getPublicStats(),
     getRegions(locale),
     searchLands({ perPage: 6 }, locale),
     listProjects({ perPage: 3, onlyOpen: true }, locale),
+    getRegionActivity(),
   ])
 
   return (
@@ -28,7 +31,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {/* ------------------------------------------------------------------ */}
       <section className="motif-zellige border-b border-sable-300 bg-sable-50">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:py-20">
-          <div className="max-w-3xl">
+          {/* La vidéo passe sous le texte en dessous de 1024 px : côte à côte,
+              aucune des deux colonnes ne serait lisible sur téléphone. */}
+          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
+            <div>
             <p className="text-sm font-semibold tracking-wide text-argile-600 uppercase">
               {t.home.eyebrow}
             </p>
@@ -47,7 +53,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <LinkButton href={path('/projets')} size="lg" variant="secondary">
                 {t.home.ctaProjects}
               </LinkButton>
+              </div>
             </div>
+
+            <VideoEmbed id="p3JBU7A8Tzo" title={t.howItWorks.videoTitle} />
           </div>
 
           <div className="mt-10 max-w-4xl">
@@ -78,6 +87,18 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </dl>
         </div>
       </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Activite par region                                                 */}
+      {/* ------------------------------------------------------------------ */}
+      {activity.length > 0 ? (
+        <section className="border-b border-sable-300 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-12">
+            <SectionTitle title={t.home.mapTitle} subtitle={t.home.mapLead} />
+            <ActivityMap regions={activity} t={t} locale={locale} />
+          </div>
+        </section>
+      ) : null}
 
       {/* ------------------------------------------------------------------ */}
       {/* Comment ca marche                                                   */}
