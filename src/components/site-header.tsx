@@ -27,6 +27,7 @@ export async function SiteHeader() {
     { href: '/carte', label: t.nav.map },
     { href: '/projets', label: t.nav.projects },
     { href: '/comment-ca-marche', label: t.nav.howItWorks },
+    { href: '/blog', label: t.nav.blog },
     { href: '/faq', label: t.nav.faq },
     { href: '/contact', label: t.nav.contact },
   ]

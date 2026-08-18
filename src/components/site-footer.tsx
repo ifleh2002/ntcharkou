@@ -25,6 +25,7 @@ export async function SiteFooter() {
       title: t.footer.platform,
       links: [
         { href: '/a-propos', label: t.footer.about },
+        { href: '/blog', label: t.nav.blog },
         { href: '/faq', label: t.nav.faq },
         { href: '/contact', label: t.nav.contact },
       ],

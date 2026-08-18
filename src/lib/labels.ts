@@ -6,6 +6,7 @@
 // =============================================================================
 
 import type {
+  BlogCategory,
   LandZoning,
   ListingStatus,
   NotificationKind,
@@ -115,3 +116,33 @@ const CRITERION_KEYS = {
   unites: true,
   reseaux: true,
 } as const
+
+/**
+ * Ordre d'affichage des rubriques du blog.
+ *
+ * De la règle au geste : ce qui encadre l'achat vient avant ce qui l'aide à se
+ * faire, et le logement participatif ferme la liste puisqu'il en est la
+ * synthèse.
+ */
+export const BLOG_CATEGORY_ORDER: BlogCategory[] = [
+  'reglementation',
+  'financement',
+  'marche',
+  'conseils',
+  'participatif',
+]
+
+/**
+ * Couleur de la pastille d'une rubrique.
+ *
+ * Constante : la même rubrique doit se reconnaître d'une liste à l'autre, et
+ * dans le back-office comme sur le site.
+ */
+export const BLOG_CATEGORY_TONE: Record<BlogCategory, 'argile' | 'zellige' | 'safran' | 'neutre'> =
+  {
+    reglementation: 'neutre',
+    financement: 'safran',
+    marche: 'argile',
+    conseils: 'zellige',
+    participatif: 'argile',
+  }

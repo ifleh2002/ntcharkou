@@ -2,6 +2,8 @@ export const LAND_IMAGES_BUCKET = 'land-images'
 export const LAND_DOCUMENTS_BUCKET = 'land-documents'
 export const PROJECT_DOCUMENTS_BUCKET = 'project-documents'
 export const AVATARS_BUCKET = 'avatars'
+/** Visuels des articles : bucket séparé, droits d'écriture réservés à l'administration. */
+export const BLOG_IMAGES_BUCKET = 'blog-images'
 
 /**
  * URL publique d'un objet stocke dans un bucket public.
@@ -37,4 +39,8 @@ export function landImageUrl(path: string | null | undefined) {
 
 export function projectImageUrl(path: string | null | undefined) {
   return publicStorageUrl(LAND_IMAGES_BUCKET, path)
+}
+
+export function postImageUrl(path: string | null | undefined) {
+  return publicStorageUrl(BLOG_IMAGES_BUCKET, path)
 }

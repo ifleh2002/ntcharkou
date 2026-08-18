@@ -44,6 +44,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       badge: memberships.count ?? 0,
     },
     { href: '/admin/matching', label: t.admin.navMatching, icon: '🎯', badge: 0 },
+    { href: '/admin/blog', label: t.admin.navBlog, icon: '📰', badge: 0 },
     { href: '/admin/utilisateurs', label: t.admin.navUsers, icon: '👥', badge: 0 },
     { href: '/admin/statistiques', label: t.admin.navStats, icon: '📈', badge: 0 },
     {

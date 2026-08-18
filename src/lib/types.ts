@@ -327,3 +327,44 @@ export interface ProjectParticipation {
   status: ParticipationStatus
   created_at: string
 }
+
+// -----------------------------------------------------------------------------
+// Blog
+// -----------------------------------------------------------------------------
+
+export type BlogCategory =
+  | 'reglementation'
+  | 'financement'
+  | 'marche'
+  | 'conseils'
+  | 'participatif'
+
+export type BlogStatus = 'brouillon' | 'publie'
+
+/**
+ * Article, tel que la vue `blog_posts_public` le renvoie.
+ *
+ * `body` est du Markdown restreint : c'est l'application qui le rend, avec
+ * échappement (`src/lib/markdown.ts`). Stocker du HTML obligerait à faire
+ * confiance à ce qui entre en base.
+ */
+export interface BlogPost {
+  id: string
+  slug: string
+  title: string
+  /** Graphie arabe du contenu rédigé ; vide, le français sert de repli. */
+  title_ar: string | null
+  excerpt: string | null
+  excerpt_ar: string | null
+  body: string
+  body_ar: string | null
+  category: BlogCategory
+  cover_image_path: string | null
+  status: BlogStatus
+  /** Estimée à partir du texte par un déclencheur — jamais saisie. */
+  reading_minutes: number | null
+  view_count: number
+  published_at: string | null
+  created_at: string
+  author_name: string | null
+}

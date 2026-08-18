@@ -3,6 +3,8 @@ import type { RegionActivity } from '@/components/activity-map'
 import { normalizeCounters } from './project-counters'
 import { createSupabaseServerClient, isSupabaseConfigured } from './supabase/server'
 import type {
+  BlogCategory,
+  BlogPost,
   City,
   LandListingPublic,
   LandZoning,
@@ -340,4 +342,161 @@ export async function getRegionActivity(): Promise<RegionActivity[]> {
       projects: Number(region.projects),
     }))
   }, [])
+}
+
+// -----------------------------------------------------------------------------
+// Blog
+// -----------------------------------------------------------------------------
+
+/** Colonnes de la vue publique des articles. */
+const POST_COLUMNS =
+  'id, slug, title, title_ar, excerpt, excerpt_ar, body, body_ar, category, ' +
+  'cover_image_path, status, reading_minutes, view_count, published_at, ' +
+  'created_at, author_name'
+
+/**
+ * Résout la graphie d'un article selon la langue en cours.
+ *
+ * Même règle que partout ailleurs : l'arabe s'il existe, le français en repli.
+ * Un article sans traduction reste lisible plutôt que de s'afficher vide.
+ */
+function localizePost(post: BlogPost, locale: Locale): BlogPost {
+  return {
+    ...post,
+    title: pickText(locale, post.title, post.title_ar) ?? post.title,
+    excerpt: pickText(locale, post.excerpt, post.excerpt_ar),
+    body: pickText(locale, post.body, post.body_ar) ?? post.body,
+  }
+}
+
+/**
+ * Articles publiés, du plus récent au plus ancien.
+ *
+ * On trie sur `published_at` et non sur `created_at` : un brouillon rédigé il y
+ * a trois semaines et publié ce matin doit apparaître en tête, sans quoi il
+ * naîtrait enterré.
+ */
+export async function listPosts(
+  options: { category?: BlogCategory; limit?: number } = {},
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<BlogPost[]> {
+  return safe(async () => {
+    const supabase = await createSupabaseServerClient()
+    let query = supabase
+      .from('blog_posts_public')
+      .select(POST_COLUMNS)
+      .eq('status', 'publie')
+      .order('published_at', { ascending: false, nullsFirst: false })
+
+    if (options.category) query = query.eq('category', options.category)
+
+    const { data } = await query.limit(options.limit ?? 30)
+    return ((data ?? []) as unknown as BlogPost[]).map((post) => localizePost(post, locale))
+  }, [])
+}
+
+/** Un article par son adresse publique. Absent ou non publié : `null`. */
+export async function getPost(
+  slug: string,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<BlogPost | null> {
+  return safe(async () => {
+    const supabase = await createSupabaseServerClient()
+    const { data } = await supabase
+      .from('blog_posts_public')
+      .select(POST_COLUMNS)
+      .eq('slug', slug)
+      .eq('status', 'publie')
+      .maybeSingle()
+
+    return data ? localizePost(data as unknown as BlogPost, locale) : null
+  }, null)
+}
+
+/**
+ * Nombre d'articles publiés par rubrique.
+ *
+ * Sert à n'afficher dans le filtre que des rubriques qui mènent quelque part :
+ * proposer « Financement » pour arriver sur une page vide n'apprend rien.
+ */
+export async function countPostsByCategory(): Promise<Record<string, number>> {
+  return safe(async () => {
+    const supabase = await createSupabaseServerClient()
+    const { data } = await supabase
+      .from('blog_posts_public')
+      .select('category')
+      .eq('status', 'publie')
+
+    const counts: Record<string, number> = {}
+    for (const row of (data ?? []) as { category: string }[]) {
+      counts[row.category] = (counts[row.category] ?? 0) + 1
+    }
+    return counts
+  }, {})
+}
+
+/**
+ * Articles voisins d'un article donné : même rubrique d'abord.
+ *
+ * Un article de fond se lit rarement seul — proposer la suite évite de renvoyer
+ * le lecteur à la liste complète.
+ */
+export async function listRelatedPosts(
+  post: BlogPost,
+  locale: Locale = DEFAULT_LOCALE,
+  limit = 3,
+): Promise<BlogPost[]> {
+  const sameCategory = (await listPosts({ category: post.category, limit: limit + 1 }, locale))
+    .filter((item) => item.id !== post.id)
+
+  if (sameCategory.length >= limit) return sameCategory.slice(0, limit)
+
+  // Rubrique peu fournie : on complète avec les plus récents, sans doublon.
+  const recent = (await listPosts({ limit: limit + sameCategory.length + 1 }, locale)).filter(
+    (item) => item.id !== post.id && !sameCategory.some((kept) => kept.id === item.id),
+  )
+
+  return [...sameCategory, ...recent].slice(0, limit)
+}
+
+/**
+ * Tous les articles, brouillons compris — back-office uniquement.
+ *
+ * La RLS laisse passer les brouillons pour l'administration seule ; un
+ * participant qui atteindrait cette requête ne verrait que les articles
+ * publiés. La lecture se fait sur la table et non sur la vue, pour disposer des
+ * colonnes de rédaction telles qu'elles ont été saisies : le back-office édite
+ * les deux langues, il ne doit donc pas recevoir la version « résolue ».
+ */
+export async function listAllPosts(): Promise<BlogPost[]> {
+  return safe(async () => {
+    const supabase = await createSupabaseServerClient()
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select(
+        'id, slug, title, title_ar, excerpt, excerpt_ar, body, body_ar, category, ' +
+          'cover_image_path, status, reading_minutes, view_count, published_at, created_at',
+      )
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return ((data ?? []) as unknown as BlogPost[]).map((post) => ({ ...post, author_name: null }))
+  }, [])
+}
+
+/** Un article par son identifiant, pour l'écran de modification. */
+export async function getPostById(id: string): Promise<BlogPost | null> {
+  return safe(async () => {
+    const supabase = await createSupabaseServerClient()
+    const { data } = await supabase
+      .from('blog_posts')
+      .select(
+        'id, slug, title, title_ar, excerpt, excerpt_ar, body, body_ar, category, ' +
+          'cover_image_path, status, reading_minutes, view_count, published_at, created_at',
+      )
+      .eq('id', id)
+      .maybeSingle()
+
+    return data ? ({ ...(data as unknown as BlogPost), author_name: null }) : null
+  }, null)
 }

@@ -6,6 +6,7 @@ import { Card, LinkButton, StatCard } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
+import { listAllPosts } from '@/lib/queries'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { PropertyNeed } from '@/lib/types'
 
@@ -68,6 +69,13 @@ export default async function AdminDashboardPage({
   ])
   const queueRows = (queue.data ?? []) as QueueRow[]
   const completenessRows = (completeness.data ?? []) as CompletenessRow[]
+
+  // État du blog : ce qui est en ligne, ce qui attend d'être publié, et ce qui
+  // est lu. Un brouillon oublié ne se signale nulle part ailleurs.
+  const posts = await listAllPosts()
+  const published = posts.filter((post) => post.status === 'publie')
+  const drafts = posts.length - published.length
+  const mostRead = [...published].sort((a, b) => b.view_count - a.view_count)[0] ?? null
 
   // Mois abrégés dans la langue courante.
   const monthFormat = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-MA' : 'fr-MA', {
@@ -187,6 +195,43 @@ export default async function AdminDashboardPage({
       </section>
 
       {/* --- Qualite du matching (section 17) --------------------------- */}
+      <section className="mt-8">
+        <Card>
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 className="font-semibold text-encre-900">{t.adminBlog.title}</h2>
+              <p className="text-sm text-encre-500">
+                {published.length} {t.adminBlog.statusPublished.toLowerCase()} · {drafts}{' '}
+                {t.adminBlog.statusDraft.toLowerCase()}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href={path('/admin/blog')} className="text-sm font-semibold text-argile-600">
+                {t.adminBlog.listTitle}
+              </Link>
+              <LinkButton href={path('/admin/blog/nouveau')} size="sm">
+                {t.adminBlog.create}
+              </LinkButton>
+            </div>
+          </div>
+
+          {mostRead ? (
+            <p className="text-sm text-encre-600">
+              🥇{' '}
+              <Link
+                href={path(`/admin/blog/${mostRead.id}`)}
+                className="font-semibold hover:underline"
+              >
+                {mostRead.title}
+              </Link>{' '}
+              — {f.number(mostRead.view_count)} {t.blog.views}
+            </p>
+          ) : (
+            <p className="text-sm text-encre-400">{t.adminBlog.emptyBody}</p>
+          )}
+        </Card>
+      </section>
+
       <section className="mt-8">
         <Card>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
