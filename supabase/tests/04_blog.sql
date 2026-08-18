@@ -133,6 +133,61 @@ begin
 end;
 $$;
 
+-- --- Referencement : les champs SEO font l'aller-retour -----------------------
+-- Une seule version de la fonction doit exister : la migration 18 change sa
+-- signature, et `create or replace` en creerait une seconde — tout appel
+-- repondrait alors « function is not unique ».
+
+do $$
+declare
+  versions integer;
+  post_id uuid;
+  vue record;
+begin
+  select count(*) into versions from pg_proc where proname = 'admin_save_post';
+  if versions <> 1 then
+    raise exception 'Une seule version de admin_save_post attendue, trouvé %', versions;
+  end if;
+
+  post_id := public.admin_save_post(
+    null, 'article-avec-seo', 'Un article référencé', 'Le contenu.',
+    'marche'::public.blog_category, 'publie',
+    'مقال مُحسَّن', 'Le chapô.', 'المقدمة.', 'المحتوى بالعربية.',
+    null,
+    'Titre pour Google', 'عنوان لغوغل',
+    'Description pour Google', 'وصف لغوغل');
+
+  select * into vue from public.blog_posts_public where id = post_id;
+
+  if vue.seo_title <> 'Titre pour Google' then
+    raise exception 'Le titre de référencement doit être publié par la vue';
+  end if;
+  if vue.seo_description_ar <> 'وصف لغوغل' then
+    raise exception 'La description arabe doit être publiée par la vue';
+  end if;
+  -- `updated_at` alimente `dateModified` : sans lui, un article revu passe pour
+  -- n'avoir jamais ete relu.
+  if vue.updated_at is null then
+    raise exception 'La vue doit publier la date de derniere revision';
+  end if;
+
+  -- Un champ vide doit revenir a null, pas a une chaine vide : une balise
+  -- `meta` vide vaut moins que pas de balise du tout.
+  perform public.admin_save_post(
+    post_id, 'article-avec-seo', 'Un article référencé', 'Le contenu.',
+    'marche'::public.blog_category, 'publie',
+    null, null, null, null, null,
+    '   ', null, null, null);
+
+  select * into vue from public.blog_posts_public where id = post_id;
+  if vue.seo_title is not null then
+    raise exception 'Un titre de référencement vide doit revenir à null';
+  end if;
+
+  perform public.admin_delete_post(post_id);
+end;
+$$;
+
 -- --- Un brouillon reste invisible du public ----------------------------------
 -- La RLS ne s'applique qu'aux rôles ordinaires : le propriétaire des tables la
 -- contourne. On endosse donc `authenticated`, faute de quoi le contrôle

@@ -14,6 +14,25 @@
  * reconnue s'affiche telle quelle plutôt que de disparaître.
  */
 
+/**
+ * Identifiant d'ancre d'un titre.
+ *
+ * Les lettres de toutes les écritures sont conservées : un titre arabe doit
+ * produire une ancre arabe, pas une ancre vide. Un titre qui ne contient aucune
+ * lettre reçoit un repli numéroté, sinon deux sections partageraient la même
+ * ancre et le sommaire renverrait toujours au même endroit.
+ */
+export function headingId(text: string, index: number): string {
+  const slug = text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '')
+
+  return slug || `section-${index}`
+}
+
 /** Échappe tout ce qui pourrait être interprété comme du balisage. */
 function escape(text: string): string {
   return text.replace(
@@ -55,6 +74,9 @@ export function renderMarkdown(source: string | null | undefined): string {
 
   const blocks = source.replace(/\r\n/g, '\n').trim().split(/\n{2,}/)
   const html: string[] = []
+  // Compteur de titres : il alimente les ancres, et le sommaire construit par
+  // `outline()` suit exactement la même numérotation.
+  let headingIndex = 0
 
   for (const block of blocks) {
     const lines = block.split('\n').filter((line) => line.trim() !== '')
@@ -64,7 +86,12 @@ export function renderMarkdown(source: string | null | undefined): string {
     const heading = lines[0].match(/^(#{2,4})\s+(.*)$/)
     if (heading && lines.length === 1) {
       const level = heading[1].length
-      html.push(`<h${level}>${inline(heading[2])}</h${level}>`)
+      headingIndex += 1
+      // L'ancre permet de citer une section précise : c'est ce qu'attendent les
+      // moteurs de réponse pour renvoyer vers le passage exact, et non vers le
+      // haut de la page.
+      const id = headingId(heading[2], headingIndex)
+      html.push(`<h${level} id="${escape(id)}">${inline(heading[2])}</h${level}>`)
       continue
     }
 

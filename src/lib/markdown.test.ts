@@ -32,8 +32,8 @@ test('les liens légitimes passent, l’externe s’ouvre à part', () => {
 })
 
 test('titres, listes et citations sont reconnus', () => {
-  assert.ok(renderMarkdown('## Le titre').includes('<h2>Le titre</h2>'))
-  assert.ok(renderMarkdown('### Sous-titre').includes('<h3>Sous-titre</h3>'))
+  assert.ok(renderMarkdown('## Le titre').includes('>Le titre</h2>'))
+  assert.ok(renderMarkdown('### Sous-titre').includes('>Sous-titre</h3>'))
 
   const liste = renderMarkdown('- premier\n- second')
   assert.ok(liste.includes('<ul>') && liste.includes('<li>premier</li>'))
@@ -55,7 +55,7 @@ test('gras et italique, sans se confondre', () => {
 
 test('les blocs restent séparés', () => {
   const html = renderMarkdown('## Titre\n\nUn paragraphe.\n\n- a\n- b')
-  assert.ok(html.includes('<h2>'))
+  assert.ok(html.includes('<h2 '))
   assert.ok(html.includes('<p>Un paragraphe.</p>'))
   assert.ok(html.includes('<ul>'))
   // Un paragraphe ne doit pas avaler la liste qui suit.
@@ -85,4 +85,24 @@ test('le résumé coupe sur un mot entier', () => {
 test('le résumé retire le balisage', () => {
   const resume = excerptFrom('Un **terrain** avec [un lien](https://x.ma) et `du code`.')
   assert.equal(resume, 'Un terrain avec un lien et du code.')
+})
+
+test('chaque titre porte une ancre citable', () => {
+  const html = renderMarkdown('## Le titre foncier\n\nUn texte.\n\n### La melkia ?')
+  assert.ok(html.includes('<h2 id="le-titre-foncier">'), html)
+  assert.ok(html.includes('<h3 id="la-melkia">'), html)
+})
+
+test('un titre arabe garde une ancre en arabe', () => {
+  // Retirer les lettres arabes produirait une ancre vide, donc deux sections
+  // pointant au même endroit.
+  const html = renderMarkdown('## الرسم العقاري')
+  assert.ok(html.includes('id="الرسم-العقاري"'), html)
+})
+
+test('un titre sans lettre reçoit une ancre de repli', () => {
+  const html = renderMarkdown('## 2024\n\nTexte.\n\n## !!!')
+  assert.ok(html.includes('id="2024"'), html)
+  // Deuxième titre : aucune lettre ni chiffre, donc repli numéroté et non vide.
+  assert.ok(html.includes('id="section-2"'), html)
 })

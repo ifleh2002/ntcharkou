@@ -36,10 +36,11 @@ function explain(error: { code?: string; message: string }): string {
   if (error.code === 'PGRST202' || /schema cache/i.test(error.message)) {
     return (
       `${error.message}\n\n` +
-      'Deux causes possibles : la migration du blog ' +
-      '(20260811160000_blog.sql) n’a pas été appliquée, ou le cache de schéma ' +
-      'de PostgREST est périmé. Appliquez la migration, puis exécutez dans ' +
-      'l’éditeur SQL Supabase : notify pgrst, \'reload schema\';'
+      'Deux causes possibles : une migration du blog ' +
+      '(20260811160000_blog.sql, puis 20260811170000_blog_seo.sql) n’a pas été ' +
+      'appliquée, ou le cache de schéma de PostgREST est périmé. Appliquez les ' +
+      'migrations manquantes, puis exécutez dans l’éditeur SQL Supabase : ' +
+      'notify pgrst, \'reload schema\';'
     )
   }
   return error.message
@@ -74,6 +75,12 @@ export async function savePost(
     p_excerpt_ar: text('excerpt_ar'),
     p_body_ar: text('body_ar'),
     p_cover: text('cover_image_path'),
+    // Vides, la base les met a null et l'affichage retombe sur le titre et le
+    // chapo de l'article.
+    p_seo_title: text('seo_title'),
+    p_seo_title_ar: text('seo_title_ar'),
+    p_seo_description: text('seo_description'),
+    p_seo_description_ar: text('seo_description_ar'),
   })
 
   if (error) return { error: explain(error) }

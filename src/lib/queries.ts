@@ -350,9 +350,17 @@ export async function getRegionActivity(): Promise<RegionActivity[]> {
 
 /** Colonnes de la vue publique des articles. */
 const POST_COLUMNS =
-  'id, slug, title, title_ar, excerpt, excerpt_ar, body, body_ar, category, ' +
+  'id, slug, title, title_ar, excerpt, excerpt_ar, body, body_ar, ' +
+  'seo_title, seo_title_ar, seo_description, seo_description_ar, category, ' +
   'cover_image_path, status, reading_minutes, view_count, published_at, ' +
-  'created_at, author_name'
+  'created_at, updated_at, author_name'
+
+/** Mêmes colonnes, lues sur la table : le back-office édite les deux langues. */
+const POST_COLUMNS_ADMIN =
+  'id, slug, title, title_ar, excerpt, excerpt_ar, body, body_ar, ' +
+  'seo_title, seo_title_ar, seo_description, seo_description_ar, category, ' +
+  'cover_image_path, status, reading_minutes, view_count, published_at, ' +
+  'created_at, updated_at'
 
 /**
  * Résout la graphie d'un article selon la langue en cours.
@@ -366,6 +374,11 @@ function localizePost(post: BlogPost, locale: Locale): BlogPost {
     title: pickText(locale, post.title, post.title_ar) ?? post.title,
     excerpt: pickText(locale, post.excerpt, post.excerpt_ar),
     body: pickText(locale, post.body, post.body_ar) ?? post.body,
+    // Sans version rédigée pour le référencement, le titre et le chapô de
+    // l'article servent de repli : une balise vide vaut moins qu'une balise
+    // approximative.
+    seo_title: pickText(locale, post.seo_title, post.seo_title_ar),
+    seo_description: pickText(locale, post.seo_description, post.seo_description_ar),
   }
 }
 
@@ -473,10 +486,7 @@ export async function listAllPosts(): Promise<BlogPost[]> {
     const supabase = await createSupabaseServerClient()
     const { data, error } = await supabase
       .from('blog_posts')
-      .select(
-        'id, slug, title, title_ar, excerpt, excerpt_ar, body, body_ar, category, ' +
-          'cover_image_path, status, reading_minutes, view_count, published_at, created_at',
-      )
+      .select(POST_COLUMNS_ADMIN)
       .order('created_at', { ascending: false })
 
     if (error) throw error
@@ -490,10 +500,7 @@ export async function getPostById(id: string): Promise<BlogPost | null> {
     const supabase = await createSupabaseServerClient()
     const { data } = await supabase
       .from('blog_posts')
-      .select(
-        'id, slug, title, title_ar, excerpt, excerpt_ar, body, body_ar, category, ' +
-          'cover_image_path, status, reading_minutes, view_count, published_at, created_at',
-      )
+      .select(POST_COLUMNS_ADMIN)
       .eq('id', id)
       .maybeSingle()
 

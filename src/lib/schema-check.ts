@@ -47,6 +47,11 @@ const EXPECTED: Probe[] = [
   // Le blog ajoute une table entière : c'est la relation elle-même qui manque
   // tant que la migration n'est pas appliquée, pas seulement une colonne.
   { column: 'blog_posts', relation: 'blog_posts_public', migration: '20260811160000_blog.sql' },
+  {
+    column: 'seo_title',
+    relation: 'blog_posts_public',
+    migration: '20260811170000_blog_seo.sql',
+  },
 ]
 
 /**

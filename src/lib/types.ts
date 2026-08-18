@@ -358,6 +358,16 @@ export interface BlogPost {
   excerpt_ar: string | null
   body: string
   body_ar: string | null
+  /**
+   * Titre et description destinés aux résultats de recherche, distincts du
+   * titre et du chapô : le premier s'adresse au lecteur déjà sur la page, le
+   * second à quelqu'un qui hésite entre dix liens. Vides, l'un et l'autre
+   * retombent sur le titre et le chapô de l'article.
+   */
+  seo_title: string | null
+  seo_title_ar: string | null
+  seo_description: string | null
+  seo_description_ar: string | null
   category: BlogCategory
   cover_image_path: string | null
   status: BlogStatus
@@ -366,5 +376,7 @@ export interface BlogPost {
   view_count: number
   published_at: string | null
   created_at: string
+  /** Dernière révision — c'est le `dateModified` des données structurées. */
+  updated_at: string | null
   author_name: string | null
 }

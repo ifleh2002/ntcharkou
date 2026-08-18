@@ -7,6 +7,7 @@ import type { Dictionary } from '@/lib/i18n'
 import { localePath, type Locale } from '@/lib/i18n/config'
 import { BLOG_CATEGORY_ORDER } from '@/lib/labels'
 import { renderMarkdown } from '@/lib/markdown'
+import { extractFaq } from '@/lib/seo'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { BLOG_IMAGES_BUCKET, postImageUrl } from '@/lib/storage'
 import type { BlogPost } from '@/lib/types'
@@ -56,7 +57,20 @@ export function PostForm({
 
   // Aperçu du rendu : le Markdown ne se lit pas comme il s'affiche.
   const [body, setBody] = useState(post?.body ?? '')
+  const [bodyAr, setBodyAr] = useState(post?.body_ar ?? '')
   const [showPreview, setShowPreview] = useState(false)
+
+  // Longueurs suivies en direct : une balise trop longue est coupée par Google,
+  // et on ne s'en aperçoit qu'une fois la page indexée.
+  const [seoTitle, setSeoTitle] = useState(post?.seo_title ?? '')
+  const [seoTitleAr, setSeoTitleAr] = useState(post?.seo_title_ar ?? '')
+  const [seoDescription, setSeoDescription] = useState(post?.seo_description ?? '')
+  const [seoDescriptionAr, setSeoDescriptionAr] = useState(post?.seo_description_ar ?? '')
+
+  // Les questions déclarées aux moteurs sortent du corps de l'article : les
+  // compter ici montre à la rédaction ce qui sera réellement publié.
+  const faqCount = extractFaq(body).length
+  const faqCountAr = extractFaq(bodyAr).length
 
   async function uploadCover(file: File): Promise<string> {
     if (!IMAGE_TYPES.includes(file.type)) throw new Error(t.adminBlog.errImageType)
@@ -282,6 +296,17 @@ export function PostForm({
           </div>
         ) : null}
 
+        <p className="mt-2 text-xs text-encre-400">{t.adminBlog.faqHint}</p>
+        <p className="mt-1 text-xs font-semibold">
+          {faqCount > 0 ? (
+            <span className="text-zellige-600">
+              ✓ {faqCount} {t.adminBlog.faqDetected}
+            </span>
+          ) : (
+            <span className="text-encre-400">{t.adminBlog.faqNone}</span>
+          )}
+        </p>
+
         <div className="mt-5">
           <Field label={t.adminBlog.bodyAr} htmlFor="body_ar">
             <textarea
@@ -291,8 +316,88 @@ export function PostForm({
               dir="rtl"
               lang="ar"
               className="champ text-sm"
-              defaultValue={post?.body_ar ?? ''}
+              value={bodyAr}
+              onChange={(event) => setBodyAr(event.target.value)}
             />
+          </Field>
+          {/* Un corps arabe vide ne casse rien — le français s'affiche en repli
+              — mais l'article n'est alors pas traduit, et rien ne le dirait. */}
+          {bodyAr.trim() ? (
+            <p className="mt-1 text-xs font-semibold text-zellige-600">
+              ✓ {faqCountAr} {t.adminBlog.faqDetected}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs font-semibold text-amber-700">
+              ⚠ {t.adminBlog.arabicBodyMissing}
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* --- Référencement --------------------------------------------- */}
+      <section className="surface p-5">
+        <h2 className="font-semibold text-encre-900">{t.adminBlog.seoSection}</h2>
+        <p className="mt-1 mb-4 text-sm text-encre-500">{t.adminBlog.seoHint}</p>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label={t.adminBlog.seoTitle}
+            htmlFor="seo_title"
+            hint={t.adminBlog.seoTitleHint}
+          >
+            <input
+              id="seo_title"
+              name="seo_title"
+              className="champ"
+              value={seoTitle}
+              onChange={(event) => setSeoTitle(event.target.value)}
+            />
+            <CharCount value={seoTitle} max={60} t={t} />
+          </Field>
+
+          <Field label={t.adminBlog.seoTitleAr} htmlFor="seo_title_ar">
+            <input
+              id="seo_title_ar"
+              name="seo_title_ar"
+              dir="rtl"
+              lang="ar"
+              className="champ"
+              value={seoTitleAr}
+              onChange={(event) => setSeoTitleAr(event.target.value)}
+            />
+            <CharCount value={seoTitleAr} max={60} t={t} />
+          </Field>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <Field
+            label={t.adminBlog.seoDescription}
+            htmlFor="seo_description"
+            hint={t.adminBlog.seoDescriptionHint}
+          >
+            <textarea
+              id="seo_description"
+              name="seo_description"
+              rows={3}
+              className="champ"
+              value={seoDescription}
+              onChange={(event) => setSeoDescription(event.target.value)}
+            />
+            <CharCount value={seoDescription} max={160} t={t} />
+          </Field>
+
+          <Field label={t.adminBlog.seoDescriptionAr} htmlFor="seo_description_ar">
+            <textarea
+              id="seo_description_ar"
+              name="seo_description_ar"
+              rows={3}
+              dir="rtl"
+              lang="ar"
+              className="champ"
+              value={seoDescriptionAr}
+              onChange={(event) => setSeoDescriptionAr(event.target.value)}
+            />
+            <CharCount value={seoDescriptionAr} max={160} t={t} />
           </Field>
         </div>
       </section>
@@ -308,5 +413,24 @@ export function PostForm({
         </Button>
       </div>
     </form>
+  )
+}
+
+/**
+ * Compteur de signes d'une balise de référencement.
+ *
+ * Il ne bloque pas la saisie : dépasser reste un choix, mais un choix informé.
+ * Sans compteur, la coupure ne se découvre qu'une fois la page indexée.
+ */
+function CharCount({ value, max, t }: { value: string; max: number; t: Dictionary }) {
+  const length = value.trim().length
+  if (length === 0) return null
+
+  const over = length > max
+  return (
+    <p className={over ? 'mt-1 text-xs font-semibold text-amber-700' : 'mt-1 text-xs text-encre-400'}>
+      {length} / {max} {t.adminBlog.seoCounter}
+      {over ? ` — ${t.adminBlog.seoTooLong}` : ''}
+    </p>
   )
 }

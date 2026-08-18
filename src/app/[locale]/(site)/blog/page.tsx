@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/ui'
 import { createFormatter } from '@/lib/format'
 import { getDictionary } from '@/lib/i18n'
 import { resolveLocale, translation } from '@/lib/i18n/server'
+import { jsonLd, languageAlternates, siteUrl } from '@/lib/seo'
 import { BLOG_CATEGORY_ORDER } from '@/lib/labels'
 import { countPostsByCategory, listPosts } from '@/lib/queries'
 import type { BlogCategory } from '@/lib/types'
@@ -14,9 +15,25 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
-  const { locale } = await params
-  const t = getDictionary(resolveLocale(locale))
-  return { title: t.blog.title, description: t.blog.lead }
+  const { locale: raw } = await params
+  const locale = resolveLocale(raw)
+  const t = getDictionary(locale)
+  const canonical = siteUrl(`/${locale}/blog`)
+
+  return {
+    title: t.blog.title,
+    description: t.blog.lead,
+    alternates: {
+      ...(canonical ? { canonical } : {}),
+      languages: languageAlternates('/blog'),
+    },
+    openGraph: {
+      type: 'website',
+      title: t.blog.title,
+      description: t.blog.lead,
+      ...(canonical ? { url: canonical } : {}),
+    },
+  }
 }
 
 export default async function BlogPage({
@@ -48,8 +65,29 @@ export default async function BlogPage({
   const available = BLOG_CATEGORY_ORDER.filter((item) => (counts[item] ?? 0) > 0)
   const [lead, ...rest] = posts
 
+  // Fiche du blog et liste de ses articles : un moteur comprend ainsi qu'il a
+  // affaire à une collection éditoriale, et non à une page quelconque.
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: t.blog.title,
+    description: t.blog.lead,
+    inLanguage: locale === 'ar' ? 'ar' : 'fr',
+    ...(siteUrl(`/${locale}/blog`) ? { url: siteUrl(`/${locale}/blog`) } : {}),
+    blogPost: posts.slice(0, 20).map((post) => ({
+      '@type': 'BlogPosting',
+      headline: post.title,
+      ...(siteUrl(`/${locale}/blog/${post.slug}`)
+        ? { url: siteUrl(`/${locale}/blog/${post.slug}`) }
+        : {}),
+      ...(post.published_at ? { datePublished: post.published_at } : {}),
+    })),
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(schema) }} />
+
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-encre-900">{t.blog.title}</h1>
         <p className="mt-2 max-w-2xl text-encre-500">{t.blog.lead}</p>

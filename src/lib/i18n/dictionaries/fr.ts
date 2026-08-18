@@ -1311,6 +1311,9 @@ export const fr = {
     notFoundBody: 'Cet article n’existe pas ou n’est plus publié.',
     views: 'lectures',
     // Un article n'est pas un conseil : le dire une fois, au bon endroit.
+    outline: 'Sommaire',
+    inShort: 'L’essentiel',
+    breadcrumb: 'Fil d’Ariane',
     disclaimer:
       'Article informatif. Il ne remplace pas l’avis d’un notaire, d’un avocat ou d’un professionnel de l’immobilier.',
     categories: {
@@ -1369,6 +1372,22 @@ export const fr = {
     errImageSize: 'Image trop lourde : 2 Mo au maximum.',
     errUpload: 'L’envoi de l’image a échoué. L’article n’a pas été enregistré.',
     notFound: 'Article introuvable.',
+    seoSection: 'Référencement',
+    seoHint:
+      'Ce que voient Google et les moteurs de réponse. Laissés vides, le titre et le chapô de l’article servent de repli.',
+    seoTitle: 'Titre pour les résultats de recherche',
+    seoTitleAr: 'Titre pour les résultats de recherche (arabe)',
+    seoTitleHint: 'Environ 60 signes. Au-delà, Google le coupe.',
+    seoDescription: 'Description pour les résultats de recherche',
+    seoDescriptionAr: 'Description pour les résultats de recherche (arabe)',
+    seoDescriptionHint: 'Environ 160 signes. Elle décide du clic, pas du classement.',
+    seoCounter: 'signes',
+    seoTooLong: 'trop long, il sera coupé',
+    faqHint:
+      'Astuce référencement : tout sous-titre de niveau 3 se terminant par « ? » devient une question fréquente déclarée aux moteurs, avec le texte qui la suit pour réponse. Écrivez les questions telles qu’un lecteur les pose.',
+    faqDetected: 'questions détectées dans le contenu',
+    faqNone: 'Aucune question détectée. Ajoutez des sous-titres « ### … ? » pour être repris par les moteurs de réponse.',
+    arabicBodyMissing: 'Contenu arabe absent — la version arabe affichera le français.',
     readingEstimate: 'Durée de lecture estimée',
     computedHint: 'Calculée sur le texte à l’enregistrement.',
   },
