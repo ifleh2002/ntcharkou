@@ -138,6 +138,7 @@ export const fr = {
       'Les terrains proposés et les projets ouverts, là où ils se trouvent. Cliquez sur une pastille pour en connaître le détail.',
     mapLands: 'terrains proposés',
     mapProjects: 'projets ouverts',
+    mapZoomHint: 'Cliquez sur une région pour voir ses terrains en détail.',
   },
 
   howItWorks: {
@@ -1129,6 +1130,9 @@ export const fr = {
       roads: '🛣️ Routes',
       places: '📍 Noms des villes',
     },
+    landsHere: 'terrains ici — cliquez pour zoomer',
+    zoomHint: 'Zoomez pour détailler les regroupements jusqu’à chaque parcelle.',
+    allRegions: 'Toutes les régions',
   },
 
   enums: {

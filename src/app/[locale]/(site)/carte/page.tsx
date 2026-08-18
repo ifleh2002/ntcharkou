@@ -24,12 +24,18 @@ const COLUMNS =
 
 export default async function CartePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const { locale: raw } = await params
   const locale = resolveLocale(raw)
   const { t, path } = translation(locale)
+
+  // Filtre régional : la carte d'accueil renvoie ici avec la région cliquée.
+  const query = await searchParams
+  const region = typeof query.region === 'string' ? query.region : null
 
   let lands: MapLand[] = []
   let openProjects = 0
@@ -37,18 +43,21 @@ export default async function CartePage({
 
   if (isSupabaseConfigured()) {
     const supabase = await createSupabaseServerClient()
-    const { data, error } = await supabase
+    let landsQuery = supabase
       .from('land_listings_public')
       .select(COLUMNS)
       .eq('status', 'publie')
       .neq('market_status', 'masque')
-      .limit(500)
+    if (region) landsQuery = landsQuery.eq('region_code', region)
+    const { data, error } = await landsQuery.limit(500)
 
     // Compteur affiché sur la carte, à côté du nombre de terrains.
-    const { count } = await supabase
+    let projectsQuery = supabase
       .from('projects_public')
       .select('id', { count: 'exact', head: true })
       .in('status', ['ouvert', 'groupe_constitue', 'en_preparation', 'realise'])
+    if (region) projectsQuery = projectsQuery.eq('region_code', region)
+    const { count } = await projectsQuery
     openProjects = count ?? 0
 
     // Une requête en échec ne doit pas se déguiser en « aucun terrain » : les
@@ -81,6 +90,13 @@ export default async function CartePage({
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-encre-900">{t.map.title}</h1>
         <p className="mt-2 max-w-2xl text-encre-500">{t.map.lead}</p>
+        {region ? (
+          <p className="mt-3 text-sm">
+            <Link href={path('/carte')} className="font-semibold text-argile-600 underline">
+              ← {t.map.allRegions}
+            </Link>
+          </p>
+        ) : null}
       </header>
 
       {queryError ? (
@@ -93,6 +109,7 @@ export default async function CartePage({
       ) : null}
 
       {placeable.length > 0 ? (
+        <>
         <LandMap
           lands={placeable}
           t={t}
@@ -100,6 +117,8 @@ export default async function CartePage({
           height={600}
           openProjects={openProjects}
         />
+        <p className="mt-2 text-sm text-encre-400">{t.map.zoomHint}</p>
+        </>
       ) : queryError ? null : (
         <EmptyState
           icon="🗺️"

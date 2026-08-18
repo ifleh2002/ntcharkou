@@ -10,6 +10,8 @@ import {
   DEFAULT_OVERLAYS,
   OVERLAYS,
   approximateArea,
+  cellSize,
+  clusterPoints,
   findLayer,
   marketColor,
   polygonToVertices,
@@ -125,4 +127,59 @@ test('la vue initiale est satellite avec les noms de villes', () => {
 
 test('un identifiant inconnu retombe sur un fond valide', () => {
   assert.ok(findLayer('inexistant').url.startsWith('https://'))
+})
+
+// --- Regroupement par zoom ---------------------------------------------------
+
+const POINTS = [
+  { id: 'a', lat: 33.5731, lng: -7.5898 }, // Casablanca
+  { id: 'b', lat: 33.5750, lng: -7.5910 }, // Casablanca, 200 m plus loin
+  { id: 'c', lat: 34.0209, lng: -6.8416 }, // Rabat
+  { id: 'd', lat: 31.6295, lng: -7.9811 }, // Marrakech
+]
+
+test('à l’échelle du pays, les points proches forment un seul groupe', () => {
+  const clusters = clusterPoints(POINTS, 5)
+  assert.ok(clusters.length < POINTS.length, 'le regroupement doit réduire le nombre de disques')
+  const total = clusters.reduce((sum, c) => sum + c.items.length, 0)
+  assert.equal(total, POINTS.length, 'aucun point ne doit être perdu')
+})
+
+test('zoomer sépare les groupes jusqu’à l’élément unique', () => {
+  const counts = [4, 6, 8, 10, 13].map((z) => clusterPoints(POINTS, z).length)
+  // Le nombre de disques croît, ou reste stable — il ne doit jamais décroître.
+  counts.forEach((n, i) => {
+    if (i > 0) assert.ok(n >= counts[i - 1], `zoom ${i} : ${n} < ${counts[i - 1]}`)
+  })
+  assert.equal(counts[counts.length - 1], POINTS.length, 'au détail, un disque par point')
+})
+
+test('le disque se pose sur ses membres, pas sur la grille', () => {
+  // Deux points assez proches pour tomber dans la même cellule au zoom 5.
+  const clusters = clusterPoints(
+    [
+      { id: 'a', lat: 33.55, lng: -7.6 },
+      { id: 'b', lat: 33.65, lng: -7.55 },
+    ],
+    5,
+  )
+  assert.equal(clusters.length, 1, 'ces deux points doivent partager une cellule')
+  // La moyenne, et non le coin de la grille : un disque doit se poser sur ce
+  // qu'il représente.
+  assert.ok(Math.abs(clusters[0].lat - 33.6) < 1e-9)
+  assert.ok(Math.abs(clusters[0].lng - -7.575) < 1e-9)
+})
+
+test('aucun point n’est perdu, quel que soit le zoom', () => {
+  for (const zoom of [0, 3, 5, 7, 9, 11, 13, 16]) {
+    const total = clusterPoints(POINTS, zoom).reduce((sum, c) => sum + c.items.length, 0)
+    assert.equal(total, POINTS.length, `zoom ${zoom}`)
+  }
+  assert.deepEqual(clusterPoints([], 5), [])
+})
+
+test('la cellule rétrécit quand le zoom augmente', () => {
+  assert.ok(cellSize(6) < cellSize(5))
+  assert.ok(cellSize(12) < cellSize(6))
+  assert.ok(cellSize(5) > 0)
 })

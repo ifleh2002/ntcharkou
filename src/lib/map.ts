@@ -209,3 +209,80 @@ export const DEFAULT_OVERLAYS: string[] = ['places']
 export function findLayer(id: string): MapLayer {
   return BASE_LAYERS.find((layer) => layer.id === id) ?? BASE_LAYERS[0]
 }
+
+// -----------------------------------------------------------------------------
+// Regroupement par zoom
+// -----------------------------------------------------------------------------
+
+export interface ClusterPoint {
+  id: string
+  lat: number
+  lng: number
+}
+
+export interface Cluster<T extends ClusterPoint> {
+  /** Identifiant stable de la cellule, pour les clés de rendu. */
+  key: string
+  lat: number
+  lng: number
+  items: T[]
+}
+
+/**
+ * Taille d'une cellule de regroupement, en degres, selon le zoom.
+ *
+ * Elle est divisee par deux a chaque niveau : c'est ce qui fait « eclater » les
+ * groupes quand on zoome, jusqu'a l'element unique. Le pas est calibre pour
+ * qu'a l'echelle du Maroc (zoom 5-6) les terrains d'une meme ville forment un
+ * seul disque, et qu'a l'echelle d'un quartier (zoom 13+) chacun ait le sien.
+ */
+export function cellSize(zoom: number): number {
+  return 8 / Math.pow(2, Math.max(0, zoom))
+}
+
+/**
+ * Regroupe des points selon le zoom.
+ *
+ * Sans cela, une carte du pays affiche des dizaines de marqueurs superposes —
+ * ou, pire, des cercles de quelques dizaines de metres qu'aucun zoom de pays ne
+ * permet de voir. Le regroupement donne un disque chiffre par grappe, qui se
+ * scinde a mesure qu'on approche.
+ *
+ * La position du groupe est la moyenne de ses membres, pas le centre de la
+ * cellule : un disque doit se poser sur ce qu'il represente, pas sur une grille
+ * invisible.
+ *
+ * Au-dela de `detailZoom`, plus aucun regroupement : chaque element est rendu
+ * individuellement, avec sa forme propre.
+ */
+export function clusterPoints<T extends ClusterPoint>(
+  points: T[],
+  zoom: number,
+  detailZoom = 13,
+): Cluster<T>[] {
+  if (zoom >= detailZoom) {
+    return points.map((point) => ({
+      key: point.id,
+      lat: point.lat,
+      lng: point.lng,
+      items: [point],
+    }))
+  }
+
+  const size = cellSize(zoom)
+  const cells = new Map<string, T[]>()
+
+  for (const point of points) {
+    const key = `${Math.floor(point.lat / size)}:${Math.floor(point.lng / size)}`
+    const bucket = cells.get(key)
+    if (bucket) bucket.push(point)
+    else cells.set(key, [point])
+  }
+
+  return [...cells.entries()].map(([key, items]) => ({
+    key,
+    lat: items.reduce((sum, p) => sum + p.lat, 0) / items.length,
+    lng: items.reduce((sum, p) => sum + p.lng, 0) / items.length,
+    items,
+  }))
+}

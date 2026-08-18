@@ -137,6 +137,13 @@ export function ActivityMap({
           })
 
           marker.bindTooltip(`${name} — ${item.count} ${item.label}`, { direction: 'top' })
+          // La carte d'accueil est un résumé : elle ne porte que des totaux par
+          // région. Le détail terrain par terrain vit sur /carte, où le
+          // regroupement se scinde au zoom — d'où ce renvoi plutôt qu'un zoom
+          // qui ne révélerait rien de plus.
+          marker.on('click', () => {
+            window.location.href = `/${locale}/carte?region=${region.code}`
+          })
           marker.addTo(map.current)
           layers.current.push(marker)
           bounds.extend(position)
@@ -172,8 +179,10 @@ export function ActivityMap({
         />
       </div>
 
+      <p className="mt-3 text-sm text-encre-400">{t.home.mapZoomHint}</p>
+
       {/* Sans légende, deux couleurs de pastilles ne veulent rien dire. */}
-      <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+      <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
         {[
           { color: LAND_COLOR, label: t.home.mapLands },
           { color: PROJECT_COLOR, label: t.home.mapProjects },

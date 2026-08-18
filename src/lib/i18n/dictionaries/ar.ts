@@ -142,6 +142,7 @@ export const ar: Dictionary = {
     mapLead: 'الأراضي المعروضة والمشاريع المفتوحة، حيث توجد. انقر على دائرة لمعرفة التفاصيل.',
     mapLands: 'أرض معروضة',
     mapProjects: 'مشروع مفتوح',
+    mapZoomHint: 'انقر على جهة لعرض أراضيها بالتفصيل.',
   },
 
   howItWorks: {
@@ -1111,6 +1112,9 @@ export const ar: Dictionary = {
       roads: '🛣️ الطرق',
       places: '📍 أسماء المدن',
     },
+    landsHere: 'أرض هنا — انقر للتقريب',
+    zoomHint: 'قرّب لتفصيل التجمعات حتى كل قطعة.',
+    allRegions: 'جميع الجهات',
   },
 
   enums: {

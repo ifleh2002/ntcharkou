@@ -9,6 +9,7 @@ import {
   MOROCCO_CENTER,
   MOROCCO_ZOOM,
   type GeoPolygon,
+  clusterPoints,
   marketColor,
   polygonToVertices,
 } from '@/lib/map'
@@ -33,15 +34,19 @@ export interface MapLand {
   map_lng: number | null
 }
 
+/** Zoom à partir duquel chaque terrain est dessiné pour lui-même. */
+const DETAIL_ZOOM = 13
+
 /**
  * Carte des terrains.
  *
+ * À l'échelle du pays, les terrains sont regroupés en disques chiffrés : une
+ * parcelle fait quelques dizaines de mètres, elle serait invisible. Les disques
+ * se scindent à mesure qu'on approche, jusqu'au tracé réel de chaque parcelle.
+ * Un clic sur un disque zoome dessus.
+ *
  * Leaflet est chargé dans un effet, jamais au rendu serveur : il touche
  * `window` dès l'import et ferait échouer le rendu de la page.
- *
- * Fond OpenStreetMap : aucune clé d'API, donc rien à provisionner ni à
- * facturer. Le tracé est stocké en GeoJSON standard, si bien qu'un passage
- * ultérieur à Mapbox ou Google ne toucherait que ce composant.
  */
 export function LandMap({
   lands,
@@ -61,8 +66,11 @@ export function LandMap({
 }) {
   const container = useRef<HTMLDivElement>(null)
   const map = useRef<LeafletMap | null>(null)
-  const shapes = useRef<LeafletPolygon[]>([])
+  const shapes = useRef<{ remove: () => void }[]>([])
   const [ready, setReady] = useState(false)
+  // Le regroupement dépend du zoom : il faut donc le suivre.
+  const [zoom, setZoom] = useState(MOROCCO_ZOOM)
+  const framed = useRef(false)
   const { base, setBase, overlays, setOverlays } = useMapLayers(map, ready)
 
   useEffect(() => {
@@ -76,6 +84,10 @@ export function LandMap({
         center: MOROCCO_CENTER,
         zoom: MOROCCO_ZOOM,
         scrollWheelZoom: false, // sinon la page ne défile plus au survol
+      })
+
+      map.current.on('zoomend', () => {
+        if (map.current) setZoom(map.current.getZoom())
       })
 
       setReady(true)
@@ -104,40 +116,97 @@ export function LandMap({
 
       const bounds = L.latLngBounds([])
 
-      for (const land of lands) {
+      // Seuls les terrains situables entrent dans le regroupement.
+      const points = lands
+        .filter((land) => land.map_lat != null && land.map_lng != null)
+        .map((land) => ({ id: land.id, lat: land.map_lat!, lng: land.map_lng!, land }))
+
+      for (const cluster of clusterPoints(points, zoom, DETAIL_ZOOM)) {
+        // Une grappe : un disque chiffré, qui zoome au clic.
+        if (cluster.items.length > 1) {
+          const radius = Math.min(34, 15 + Math.sqrt(cluster.items.length) * 3.4)
+          const marker = L.marker([cluster.lat, cluster.lng], {
+            icon: L.divIcon({
+              className: '',
+              iconSize: [radius * 2, radius * 2],
+              iconAnchor: [radius, radius],
+              html: `<div style="
+                width:${radius * 2}px;height:${radius * 2}px;
+                display:grid;place-items:center;border-radius:9999px;
+                background:${marketColor('disponible')};
+                border:3px solid rgba(255,255,255,.85);
+                box-shadow:0 2px 8px rgba(0,0,0,.25);
+                color:#fff;font-weight:700;
+                font-size:${Math.max(11, Math.min(16, radius * 0.6))}px;
+                ">${cluster.items.length}</div>`,
+            }),
+          })
+
+          marker.bindTooltip(`${cluster.items.length} ${t.map.landsHere}`, { direction: 'top' })
+          marker.on('click', () => {
+            // Zoomer d'un cran de plus que le seuil de scission : le clic doit
+            // toujours faire progresser, jamais laisser le disque intact.
+            map.current?.setView([cluster.lat, cluster.lng], Math.min(DETAIL_ZOOM, zoom + 2))
+          })
+          marker.addTo(map.current)
+          shapes.current.push(marker)
+          bounds.extend([cluster.lat, cluster.lng])
+          continue
+        }
+
+        // Un seul terrain : son contour réel s'il en a un, sinon un marqueur.
+        const { land } = cluster.items[0]
         const color = marketColor(land.market_status)
         const vertices = polygonToVertices(land.parcel)
 
-        // Sans contour tracé, un cercle au centre connu : le terrain reste
-        // repérable plutôt que d'être absent de la carte.
-        const shape = vertices.length
-          ? L.polygon(vertices, { color, weight: 2, fillColor: color, fillOpacity: 0.35 })
-          : land.map_lat != null && land.map_lng != null
-            ? (L.circle([land.map_lat, land.map_lng], {
-                radius: 60,
-                color,
-                fillColor: color,
-                fillOpacity: 0.35,
-              }) as unknown as LeafletPolygon)
-            : null
-
-        if (!shape) continue
-
-        shape.addTo(map.current)
-        shape.bindPopup(popupHtml(land, t, locale))
-        if (onSelect) shape.on('click', () => onSelect(land.id))
-        shapes.current.push(shape)
-        bounds.extend(shape.getBounds())
+        if (vertices.length) {
+          const polygon = L.polygon(vertices, {
+            color,
+            weight: 2,
+            fillColor: color,
+            fillOpacity: 0.35,
+          })
+          polygon.addTo(map.current)
+          polygon.bindPopup(popupHtml(land, t, locale))
+          if (onSelect) polygon.on('click', () => onSelect(land.id))
+          shapes.current.push(polygon)
+          bounds.extend(polygon.getBounds())
+        } else {
+          // Pastille de taille fixe : un cercle de quelques dizaines de mètres
+          // serait invisible dès qu'on dézoome un peu.
+          const marker = L.marker([cluster.lat, cluster.lng], {
+            icon: L.divIcon({
+              className: '',
+              iconSize: [22, 22],
+              iconAnchor: [11, 11],
+              html: `<div style="
+                width:22px;height:22px;border-radius:9999px;
+                background:${color};
+                border:3px solid rgba(255,255,255,.85);
+                box-shadow:0 1px 5px rgba(0,0,0,.3);"></div>`,
+            }),
+          })
+          marker.addTo(map.current)
+          marker.bindPopup(popupHtml(land, t, locale))
+          if (onSelect) marker.on('click', () => onSelect(land.id))
+          shapes.current.push(marker)
+          bounds.extend([cluster.lat, cluster.lng])
+        }
       }
 
-      if (bounds.isValid()) map.current.fitBounds(bounds.pad(0.2), { maxZoom: 16 })
+      // Le cadrage initial seulement : recadrer à chaque zoom empêcherait
+      // l'utilisateur de se déplacer.
+      if (!framed.current && bounds.isValid()) {
+        map.current.fitBounds(bounds.pad(0.2), { maxZoom: 12 })
+        framed.current = true
+      }
     }
 
     void draw()
     return () => {
       cancelled = true
     }
-  }, [ready, lands, t, locale, onSelect])
+  }, [ready, lands, zoom, t, locale, onSelect])
 
   return (
     <div>
