@@ -21,14 +21,27 @@
  * produire une ancre arabe, pas une ancre vide. Un titre qui ne contient aucune
  * lettre reçoit un repli numéroté, sinon deux sections partageraient la même
  * ancre et le sommaire renverrait toujours au même endroit.
+ *
+ * Le traitement des signes diacritiques demande une précision qui a manqué à la
+ * première version. Décomposer puis retirer la plage `U+0300–U+036F` supprime
+ * les accents latins — c'est le but : « Réquisition » doit donner
+ * « requisition ». Mais la hamza arabe vit HORS de cette plage : décomposée,
+ * elle survivait au filtre des accents pour se faire ensuite éliminer comme
+ * « caractère non alphabétique », et « الأكثر » sortait coupé en
+ * « الا-كثر ». On conserve donc les marques (`\p{M}`), puis on recompose en
+ * NFC : l'arabe retrouve sa graphie d'origine, le latin garde son accent retiré.
  */
 export function headingId(text: string, index: number): string {
   const slug = text
     .normalize('NFD')
+    // Accents latins uniquement : cette plage ne contient aucune marque arabe.
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/[^\p{L}\p{N}\p{M}]+/gu, '-')
     .replace(/^-+|-+$/g, '')
+    // Recomposition : sans elle, l'ancre porterait une hamza détachée de sa
+    // lettre, illisible dans une barre d'adresse.
+    .normalize('NFC')
 
   return slug || `section-${index}`
 }

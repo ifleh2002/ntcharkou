@@ -95,17 +95,38 @@ test('le balisage est retiré des réponses', () => {
   assert.equal(faq[0].answer, 'Un mot et un lien.')
 })
 
-test('les variantes de langue couvrent les deux langues et le repli', () => {
-  assert.deepEqual(languageAlternates('/blog/mon-article'), {
-    fr: '/fr/blog/mon-article',
-    ar: '/ar/blog/mon-article',
-    'x-default': '/fr/blog/mon-article',
-  })
-  assert.deepEqual(languageAlternates('/'), {
-    fr: '/fr',
-    ar: '/ar',
-    'x-default': '/fr',
-  })
+test('les variantes de langue sont des adresses absolues', () => {
+  // Le cas qui a échoué en production : Google ignore purement et simplement un
+  // `hreflang` relatif. Les balises étaient présentes dans la page, et inertes.
+  const precedent = process.env.NEXT_PUBLIC_SITE_URL
+  process.env.NEXT_PUBLIC_SITE_URL = 'https://ntcharkou.ma'
+  try {
+    assert.deepEqual(languageAlternates('/blog/mon-article'), {
+      fr: 'https://ntcharkou.ma/fr/blog/mon-article',
+      ar: 'https://ntcharkou.ma/ar/blog/mon-article',
+      'x-default': 'https://ntcharkou.ma/fr/blog/mon-article',
+    })
+    assert.deepEqual(languageAlternates('/'), {
+      fr: 'https://ntcharkou.ma/fr',
+      ar: 'https://ntcharkou.ma/ar',
+      'x-default': 'https://ntcharkou.ma/fr',
+    })
+  } finally {
+    if (precedent === undefined) delete process.env.NEXT_PUBLIC_SITE_URL
+    else process.env.NEXT_PUBLIC_SITE_URL = precedent
+  }
+})
+
+test('sans adresse de site, aucune variante n’est publiée', () => {
+  // Mieux vaut aucune annotation qu'une annotation qu'aucun moteur ne peut
+  // suivre : la seconde laisse croire que le travail est fait.
+  const precedent = process.env.NEXT_PUBLIC_SITE_URL
+  delete process.env.NEXT_PUBLIC_SITE_URL
+  try {
+    assert.deepEqual(languageAlternates('/blog/mon-article'), {})
+  } finally {
+    if (precedent !== undefined) process.env.NEXT_PUBLIC_SITE_URL = precedent
+  }
 })
 
 test('la description meta coupe sur un mot entier', () => {

@@ -146,14 +146,25 @@ export function siteUrl(path = '/'): string | null {
  * `x-default` désigne la version servie à qui n'exprime aucune préférence :
  * sans elle, un moteur choisit lui-même, et se trompe régulièrement de langue
  * sur un site bilingue.
+ *
+ * Les adresses sont ABSOLUES. La première version renvoyait des chemins
+ * relatifs, et Next les publiait tels quels : `hreflang` n'accepte que des URL
+ * complètes, si bien que les trois balises étaient présentes dans la page et
+ * ignorées par Google. Une annotation inerte est pire qu'absente — elle donne
+ * l'impression que le travail est fait.
+ *
+ * Sans `NEXT_PUBLIC_SITE_URL`, on ne publie RIEN plutôt que des chemins
+ * relatifs : même raison que pour la canonique, une annotation qu'aucun moteur
+ * ne peut suivre n'a pas à figurer dans la page.
  */
 export function languageAlternates(pathWithoutLocale: string): Record<string, string> {
   const suffix = pathWithoutLocale === '/' ? '' : pathWithoutLocale
-  return {
-    fr: `/fr${suffix}`,
-    ar: `/ar${suffix}`,
-    'x-default': `/fr${suffix}`,
-  }
+
+  const fr = siteUrl(`/fr${suffix}`)
+  const ar = siteUrl(`/ar${suffix}`)
+  if (!fr || !ar) return {}
+
+  return { fr, ar, 'x-default': fr }
 }
 
 /** Sérialise un objet JSON-LD pour une insertion en balise `<script>`. */

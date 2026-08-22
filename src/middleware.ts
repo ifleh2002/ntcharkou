@@ -114,6 +114,21 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
+/**
+ * Chemins confiés au middleware.
+ *
+ * `robots.txt` et `sitemap.xml` DOIVENT rester hors de cette liste. Ils vivent à
+ * la racine, sans préfixe de langue : soumis à la règle 1, ils étaient redirigés
+ * vers `/fr/robots.txt`, une route qui n'existe pas — les deux répondaient 404
+ * en production, et tout le référencement reposait sur des fichiers
+ * inatteignables. Rien ne le signalait : une redirection réussie suivie d'un 404
+ * ressemble à une page simplement absente.
+ *
+ * Les deux fichiers n'ont d'ailleurs aucune raison d'être localisés : ils
+ * décrivent le site entier et déclarent eux-mêmes ses versions linguistiques.
+ */
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }

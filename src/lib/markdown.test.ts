@@ -100,6 +100,23 @@ test('un titre arabe garde une ancre en arabe', () => {
   assert.ok(html.includes('id="الرسم-العقاري"'), html)
 })
 
+test('la hamza ne coupe pas le mot en deux', () => {
+  // Le défaut parti en production : décomposée, la hamza survivait au filtre des
+  // accents latins puis se faisait éliminer comme « caractère non
+  // alphabétique », et « الأكثر » sortait en « الا-كثر ».
+  const html = renderMarkdown('## الأكثر أماناً\n\nTexte.\n\n### أسئلة شائعة')
+  assert.ok(html.includes('id="الأكثر-أماناً"'), html)
+  assert.ok(html.includes('id="أسئلة-شائعة"'), html)
+  assert.ok(!html.includes('الا-كثر'), 'le mot est encore coupé')
+})
+
+test('les accents latins restent retirés', () => {
+  // La contrepartie : conserver les marques ne doit pas ramener les accents
+  // français dans les adresses.
+  const html = renderMarkdown('## Réquisition d’immatriculation')
+  assert.ok(html.includes('id="requisition-d-immatriculation"'), html)
+})
+
 test('un titre sans lettre reçoit une ancre de repli', () => {
   const html = renderMarkdown('## 2024\n\nTexte.\n\n## !!!')
   assert.ok(html.includes('id="2024"'), html)

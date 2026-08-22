@@ -43,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: siteUrl(`/${locale}${page.path === '/' ? '' : page.path}`) as string,
         changeFrequency: page.frequency,
         priority: page.priority,
-        alternates: { languages: absolute(languageAlternates(page.path)) },
+        alternates: { languages: languageAlternates(page.path) },
       })
     }
   }
@@ -58,20 +58,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: post.updated_at ?? post.published_at ?? post.created_at,
         changeFrequency: 'monthly',
         priority: 0.7,
-        alternates: { languages: absolute(languageAlternates(`/blog/${post.slug}`)) },
+        alternates: { languages: languageAlternates(`/blog/${post.slug}`) },
       })
     }
   }
 
   return entries
-}
-
-/** Les variantes de langue doivent être absolues, comme les URL elles-mêmes. */
-function absolute(languages: Record<string, string>): Record<string, string> {
-  const result: Record<string, string> = {}
-  for (const [code, path] of Object.entries(languages)) {
-    const url = siteUrl(path)
-    if (url) result[code] = url
-  }
-  return result
 }
